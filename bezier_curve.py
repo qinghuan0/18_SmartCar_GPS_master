@@ -249,7 +249,7 @@ if __name__ == '__main__':
     print("GPS点位为:", gps_list)
 
     filter_points,velocity = speed_control(curve_points)
-    print(velocity)
+    print("速度数组为:",velocity)
     out_put(filter_points,velocity)
 
 #修改下面这个函数的第一个参数来查看原始点位(control_points)或处理后的点位(filter_points)
