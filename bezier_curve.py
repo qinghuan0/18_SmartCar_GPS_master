@@ -17,9 +17,9 @@ ser = serial.Serial('COM15', 115200,timeout=0)
 # 串口接收函数
 def gps_receive():
     A_flag = 0
-    lo_flag = 0
     int_value = 0
     w = 0
+    lo_flag = 0
     loop = 0
     if ser.isOpen():
         print("open success")
@@ -239,7 +239,8 @@ def speed_control(points):
 if __name__ == '__main__':
     gps_receive()
     control_points = np.array(gps_list)  # 控制点坐标
-    num_points = len(control_points) + 10  # 曲线上的点数量
+
+    num_points = len(control_points) + 10  # 曲线上的点数量，如发现点位重合情况可适当改小
 
     curve_points = bezier_curve(control_points, num_points)
 
