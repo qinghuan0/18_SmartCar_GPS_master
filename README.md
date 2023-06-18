@@ -52,11 +52,6 @@
         flash_read_my(lati_1,lati,pointsum);
         flash_read1_my(longi_1,longi,pointsum);
     
-        for(int i=0;i<250;i++)
-        {
-            if(la_bezier[i]!=0) bezier_point++;
-        }
-    
     #if 1 //置1采集完数据之后，按复位将GPS原始数据上传至上位机，接着置0使用处理后的点。
         for(int count=0;count<pointsum;count++)
             {
