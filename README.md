@@ -47,7 +47,8 @@
         }
     
     #if 1 //置1采集完数据之后，按复位将GPS原始数据上传至上位机，接着置0使用处理后的点。
-        for(int count=0;count<pointsum;count++){
+        for(int count=0;count<pointsum;count++)
+            {
                 GPS_get_latitude[count]=lati[count];   //纬度
                 GPS_get_longitude[count]=longi[count];   //经度
                 send_gps_data(lati[count],longi[count]);
@@ -55,16 +56,17 @@
             uart_write_string(UART_2, "4");
     
     #else
-            //    if(sizeof(la_bezier)/sizeof(la_bezier[0]) < sizeof(lo_bezier)/sizeof(lo_bezier[0])) bezier_point = sizeof(la_bezier)/sizeof(la_bezier[0]);
-            //    else bezier_point = sizeof(lo_bezier)/sizeof(lo_bezier[0]);
-            //    for(int k=0;k<bezier_point;k++)
-            //    {
-            //        GPS_get_latitude[k]=la_bezier[k];
-            //        GPS_get_longitude[k]=lo_bezier[k];
-            //        send_gps_data(GPS_get_latitude[k],GPS_get_longitude[k]);       //发送经纬度到上位机
-            //    }
-            //    uart_write_string(UART_2, "4"); //上位机结束标志
+        if(sizeof(la_bezier)/sizeof(la_bezier[0]) < sizeof(lo_bezier)/sizeof(lo_bezier[0])) bezier_point = sizeof(la_bezier)/sizeof(la_bezier[0]);
+        else bezier_point = sizeof(lo_bezier)/sizeof(lo_bezier[0]);
+        for(int k=0;k<bezier_point;k++)
+        {
+            GPS_get_latitude[k]=la_bezier[k];
+            GPS_get_longitude[k]=lo_bezier[k];
+            send_gps_data(GPS_get_latitude[k],GPS_get_longitude[k]);       //发送经纬度到上位机
+        }
+        uart_write_string(UART_2, "4"); //上位机结束标志
     #endif
 
         found_already = 1;
     }
+
