@@ -234,7 +234,7 @@ def speed_control(points):
     points = points[keep]
     velocity = velocity[keep_s]
 
-    return points,velocity #返回过滤后的点位数组和曲率数组
+    return points,velocity #返回过滤后的点位数组和速度数组
 
 if __name__ == '__main__':
     gps_receive()
