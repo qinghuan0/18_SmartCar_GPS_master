@@ -58,38 +58,40 @@
     //发送帧尾
     uart_write_string(UART_2, "3");
 
-#### 最后发送“4”代表结束
+#### 发送“4”代表开始发送标志点位
+#### 最后发送“5”表示结束
 
 ### 代码示例
 
-    void qudian(void)
+    if(sw3_status==0)
     {
-        int bezier_point = 0;
-    
-        flash_read_my(lati_1,lati,pointsum);
-        flash_read1_my(longi_1,longi,pointsum);
-    
-    #if 1 //置1采集完数据之后，按复位将GPS原始数据上传至上位机，接着置0使用处理后的点。
-        for(int count=0;count<pointsum;count++)
-            {
-                GPS_get_latitude[count]=lati[count];   //纬度
-                GPS_get_longitude[count]=longi[count];   //经度
-                send_gps_data(lati[count],longi[count]);
-            }
-            uart_write_string(UART_2, "4");
-    
-    #else
-        if(sizeof(la_bezier)/sizeof(la_bezier[0]) < sizeof(lo_bezier)/sizeof(lo_bezier[0])) bezier_point = sizeof(la_bezier)/sizeof(la_bezier[0]);
-        else bezier_point = sizeof(lo_bezier)/sizeof(lo_bezier[0]);
-        for(int k=0;k<bezier_point;k++)
-        {
-            GPS_get_latitude[k]=la_bezier[k];
-            GPS_get_longitude[k]=lo_bezier[k];
-            send_gps_data(GPS_get_latitude[k],GPS_get_longitude[k]);       //发送经纬度到上位机
-        }
-        uart_write_string(UART_2, "4"); //上位机结束标志
-    #endif
+         flash_read_page_to_buffer(0, 9);
+         for(int i=0;i<250;i++)
+          {
+             if(flash_union_buffer[i].int16_type>=0&&flash_union_buffer[i].int16_type<30)
+              {
+                  velocity[i] = flash_union_buffer[i].int16_type;
+                  last_p++;
+              }
+             else velocity[i]=5;
+          }
+         flash_read_my(lati_1,lati,pointsum);
+         flash_read1_my(longi_1,longi,pointsum);
+         for(int count=0;count<pointsum;count++)
+         {
+              GPS_get_latitude[count]=lati[count];   //纬度
+              GPS_get_longitude[count]=longi[count];   //经度
+              send_gps_data(lati[count],longi[count]);
+          }
+         uart_write_string(UART_2, "4");
 
-        found_already = 1;
+         Cone_barrel_flash_read_my(Cone_barrel_lati_1,Cone_barrel_lati,Cone_barrelsum);
+         Cone_barrel_flash_read1_my(Cone_barrel_longi_1,Cone_barrel_longi,Cone_barrelsum);
+         for(int count=0;count<Cone_barrelsum;count++)
+         {
+             send_gps_data(Cone_barrel_lati[count],Cone_barrel_longi[count]);
+         }
+         uart_write_string(UART_2, "5");
+
     }
 

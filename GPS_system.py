@@ -1,7 +1,7 @@
 # -------------------------------
 # GPS_system
 # author:恩
-# version:2.0
+# version:2.1
 # -------------------------------
 
 
@@ -23,6 +23,7 @@ import os
 def read_point(file_name):
     # 数据存放
     data = []
+    flag = 0
 
     with open(file_name, "r") as f:
         for line in f.readlines():
@@ -33,13 +34,24 @@ def read_point(file_name):
     # 读出经纬度数据
     x = []
     y = []
+    #标志点
+    flg_x = []
+    flg_y = []
 
     for dd in data:
+        if dd == '***':
+            flag = 1
+            continue
         dt = dd.split(',')
-        x.append(float(dt[0]))
-        y.append(float(dt[1]))
+        if flag == 0:
+            x.append(float(dt[0]))
+            y.append(float(dt[1]))
 
-    return x, y
+        else:
+            flg_x.append(float(dt[0]))
+            flg_y.append(float(dt[1]))
+
+    return x, y, flg_x, flg_y
 
 # ---------------生成程序函数-------------------------
 def make_code(x, y, speed ,your_name):
@@ -50,13 +62,13 @@ def make_code(x, y, speed ,your_name):
         file.truncate()  # 清空文本
         file.write("\n*********************lo***********************\n")
         for i in range(0, n):
-            x[i] = round(x[i],7)
+            x[i] = round(x[i],6)
             file.write(str(x[i]) + ',')
             if i % 5 == 0 and i != 0:
                 file.write("\n")
         file.write("\n*********************la***********************\n")
         for i in range(0, n):
-            y[i] = round(y[i], 7)
+            y[i] = round(y[i], 6)
             file.write(str(y[i]) + ',')
             if i % 5 == 0 and i != 0:
                 file.write("\n")
@@ -120,16 +132,16 @@ class Point_Move:
     showverts = True
     offset = 0.00001  # 距离偏差设置
 
-    def __init__(self,ox, oy):
+    def __init__(self,ox, oy, flg_x, flg_y):
         # 创建figure（绘制面板）、创建图表（axes）
         self.fig, self.ax = plt.subplots()
         # 设置标题
         self.ax.set_title('Click and drag a point to move it')
         # 设置坐标轴范围
-        self.ax.set_xlim((min(ox) - 0.00002, max(ox) + 0.00002))
-        self.ax.set_ylim((min(oy) - 0.00002, max(oy) + 0.00002))
-
+        self.ax.set_xlim((min(ox) - 0.00005, max(ox) + 0.00005))
+        self.ax.set_ylim((min(oy) - 0.00005, max(oy) + 0.00005))
         self.ax.plot(ox, oy, '-y')
+        self.ax.plot(flg_x,flg_y,'bo')
         self.x = ox
         self.y = oy
         # 绘制2D的动画line
@@ -242,7 +254,7 @@ if __name__ == "__main__":
 
     # ---------------欢迎界面----------------
     g.msgbox("-----------------------------越野组gps调试系统----------------------------\n"
-             "-------------------------------version:2.0---------------------------------",
+             "-------------------------------version:2.1---------------------------------",
              'gps-system',
              '启动', 'en_logo.jpg')
 
@@ -257,7 +269,7 @@ if __name__ == "__main__":
                 g.msgbox("请确定你的路径下是否有该配置文件！！！", "gps-system")
 
     # 读点
-    x, y = read_point(setname + ".txt")
+    x, y, flag_x, flag_y = read_point(setname + ".txt")
 
     xi, yi, outx, outy, speed_control = make_curve(x, y)
     outname = None
@@ -269,7 +281,7 @@ if __name__ == "__main__":
     routy = y.copy()
 
     # 调用可调plot类
-    mygps = Point_Move(x,y)
+    mygps = Point_Move(x,y,flag_x,flag_y)
     while True:
         msg = "请选择你的操作"
         title = "gps-system"
@@ -277,14 +289,14 @@ if __name__ == "__main__":
         choice = g.choicebox(msg, title, choices)
 
         if choice == '调整轨迹':
-            mygps.__init__(x, y)
+            mygps.__init__(x, y, flag_x, flag_y)
 
         if choice == '轨迹复位':
             x = routx
             y = routy
             routx = x.copy()
             routy = y.copy()
-            mygps.__init__(x, y)
+            mygps.__init__(x, y, flag_x, flag_y)
 
         if choice == '输出代码':
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
@@ -313,5 +325,6 @@ if __name__ == "__main__":
 
             ax1.plot(xi, yi, '-y')
             ax1.plot(outx, outy, '--r')
+            ax1.plot(flag_x, flag_y, 'bo')
             plt.show()
 
