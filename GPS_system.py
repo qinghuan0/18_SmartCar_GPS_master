@@ -17,6 +17,12 @@ import easygui as g
 import sys
 import os
 
+#-----------------宏定义----------------
+stage1 = 180  #阶段一
+stage2 = 480
+stage3 = 550
+stage4 = 650
+
 # ----------------------------My_function-----------------------------------------------
 
 # ---------------读取函数----------------------
@@ -89,7 +95,7 @@ def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
     o_x.append(x[0])
     o_y.append(y[0])
     speed = [] #速度数组
-    z_speed = 8 #直道速度
+    z_speed = 12 #直道速度
     s_speed = 6 #s弯速度
     y_speed = 6 #圆环速度
     speed.append(z_speed)
@@ -104,22 +110,27 @@ def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
             point_y += coefficient * control_points_y[j]
         curve_points_x[i] = point_x
         curve_points_y[i] = point_y
-        if ii <= 180:  # 直道
+        if ii <= stage1:  # 直道
             if ii % 180 == 0:
                 o_x.append(curve_points_x[i])
                 o_y.append(curve_points_y[i])
                 speed.append(z_speed)
-        if ii > 180 and ii <= 510:  # s弯
+        if ii > stage1 and ii <= stage2:  # s弯
             if (ii - 180) % 16 == 0:
                 o_x.append(curve_points_x[i])
                 o_y.append(curve_points_y[i])
                 speed.append(s_speed)
-        if ii > 510 and ii <= 690:  # 大圆环
+        if ii > stage2 and ii <= stage3:  # 直道
             if (ii - 510) % 50 == 0:
                 o_x.append(curve_points_x[i])
                 o_y.append(curve_points_y[i])
+                speed.append(z_speed)
+        if ii > stage3 and ii <= stage4:  # 大圆环
+            if (ii - 690) % 16 == 0:
+                o_x.append(curve_points_x[i])
+                o_y.append(curve_points_y[i])
                 speed.append(y_speed)
-        if ii > 690 and ii <= 1000:  # 直道
+        if ii > stage4 and ii <= 1000:  # 直道
             if (ii - 690) % 100 == 0:
                 o_x.append(curve_points_x[i])
                 o_y.append(curve_points_y[i])
@@ -326,5 +337,9 @@ if __name__ == "__main__":
             ax1.plot(xi, yi, '-y')
             ax1.plot(outx, outy, '--r')
             ax1.plot(flag_x, flag_y, 'bo')
+            ax1.text(xi[stage1] + 0.000005 ,yi[stage1] + 0.000005,'stage1',weight="bold",color="r",fontsize=7)
+            ax1.text(xi[stage2] + 0.000005, yi[stage2] + 0.000005, 'stage2', weight="bold", color="r", fontsize=7)
+            ax1.text(xi[stage3] + 0.000005, yi[stage3] + 0.000005, 'stage3', weight="bold", color="r", fontsize=7)
+            ax1.text(xi[stage4] + 0.000005, yi[stage4] + 0.000005, 'stage4', weight="bold", color="r", fontsize=7)
             plt.show()
 
