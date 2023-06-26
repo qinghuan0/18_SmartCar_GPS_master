@@ -27,6 +27,7 @@ def gps_receive():
         if keyboard.is_pressed('q'):
             ser.close()
             print("接收完毕!")
+            break
         if count > 0:
             data = ser.read(1)
             print(data)

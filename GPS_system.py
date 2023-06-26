@@ -18,10 +18,10 @@ import sys
 import os
 
 #-----------------宏定义----------------
-stage1 = 180  #阶段一
-stage2 = 480
-stage3 = 550
-stage4 = 650
+stage1 = 100  #阶段一
+stage2 = 400
+stage3 = 410
+stage4 = 700
 
 # ----------------------------My_function-----------------------------------------------
 
@@ -86,14 +86,29 @@ def make_code(x, y, speed ,your_name):
 
 # --------------------拟合曲线函数----------------------------
 def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
-    n = len(control_points_x) - 1
-    t = np.linspace(0, 1, 1000)
-    curve_points_x = np.zeros(1000)
-    curve_points_y = np.zeros(1000)
+
+    # list转numpy
+    use_x = np.array(control_points_x)
+    use_y = np.array(control_points_y)
+
+    # 去掉重复的点
+    okay = np.where(np.abs(np.diff(use_x)) + np.abs(np.diff(use_y)) > 0)
+    use_xx = np.r_[use_x[okay],use_x[-1]]
+    use_yy = np.r_[use_y[okay],use_y[-1]]
+
+    tck, u = interpolate.splprep([use_xx, use_yy], s=0)
+    # evaluate the spline fits for 1000 evenly spaced distance values
+    curve_points_x, curve_points_y = interpolate.splev(np.linspace(0, 1, 1000), tck)
+
+    # n = len(control_points_x) - 1
+    # t = np.linspace(0, 1, 1000)
+    # curve_points_x = np.zeros(1000)
+    # curve_points_y = np.zeros(1000)
     o_x = []
     o_y = []
     o_x.append(x[0])
     o_y.append(y[0])
+
     speed = [] #速度数组
     z_speed = 12 #直道速度
     s_speed = 6 #s弯速度
@@ -102,14 +117,16 @@ def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
 
     for i in range(1000):
         ii = i + 1
-        point_x = 0.0
-        point_y = 0.0
-        for j in range(n + 1):
-            coefficient = np.math.comb(n, j) * t[i] ** j * (1 - t[i]) ** (n - j)
-            point_x += coefficient * control_points_x[j]
-            point_y += coefficient * control_points_y[j]
-        curve_points_x[i] = point_x
-        curve_points_y[i] = point_y
+
+        # point_x = 0.0
+        # point_y = 0.0
+        # for j in range(n + 1):
+        #     coefficient = np.math.comb(n, j) * t[i] ** j * (1 - t[i]) ** (n - j)
+        #     point_x += coefficient * control_points_x[j]
+        #     point_y += coefficient * control_points_y[j]
+        # curve_points_x[i] = point_x
+        # curve_points_y[i] = point_y
+
         if ii <= stage1:  # 直道
             if ii % 180 == 0:
                 o_x.append(curve_points_x[i])
@@ -131,7 +148,7 @@ def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
                 o_y.append(curve_points_y[i])
                 speed.append(y_speed)
         if ii > stage4 and ii <= 1000:  # 直道
-            if (ii - 690) % 100 == 0:
+            if (ii - 690) % 300 == 0:
                 o_x.append(curve_points_x[i])
                 o_y.append(curve_points_y[i])
                 speed.append(z_speed)
@@ -264,10 +281,10 @@ class Point_Move:
 if __name__ == "__main__":
 
     # ---------------欢迎界面----------------
-    g.msgbox("-----------------------------越野组gps调试系统----------------------------\n"
-             "-------------------------------version:2.1---------------------------------",
-             'gps-system',
-             '启动', 'en_logo.jpg')
+    # g.msgbox("-----------------------------越野组gps调试系统----------------------------\n"
+    #          "-------------------------------version:2.1---------------------------------",
+    #          'gps-system',
+    #          '启动', 'en_logo.jpg')
 
     # ------------打开启动文件--------------------
     setname = ''
