@@ -85,7 +85,7 @@ def make_code(x, y, speed ,your_name):
                 file.write("\n")
 
 # --------------------拟合曲线函数----------------------------
-def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
+def make_curve(control_points_x, control_points_y):
 
     # list转numpy
     use_x = np.array(control_points_x)
@@ -118,6 +118,7 @@ def make_curve(control_points_x, control_points_y):#贝塞尔曲线拟合
     for i in range(1000):
         ii = i + 1
 
+        #贝塞尔曲线拟合
         # point_x = 0.0
         # point_y = 0.0
         # for j in range(n + 1):
