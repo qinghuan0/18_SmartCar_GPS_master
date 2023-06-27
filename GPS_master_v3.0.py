@@ -58,7 +58,10 @@ def s_bend(x_coords, y_coords, num_points):
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
-                angles = np.linspace(np.pi * 4 / 5 , -np.pi / 2 , num_points+6)
+                if x_coords[0] > x_coords[1]:
+                    angles = np.linspace(-np.pi / 4, np.pi * 4 / 5, num_points + 6)
+                else:
+                    angles = np.linspace(np.pi * 4 / 5 , -np.pi / 2 , num_points+6)
             else:
                 angles = np.linspace(np.pi / 4, np.pi / 2, num_points+1)
             circle_points_x = x1 + radius * np.cos(angles)
@@ -162,11 +165,20 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     # s弯
     stage2_x, stage2_y = s_bend(flg_x[:bar_num], flag_y[:bar_num], 16)
     # 起点到第一个锥桶
-    stage1_x, stage1_y = insert_point(x[0],y[0],stage2_x[0],stage2_y[0], 30)
-    #过s弯到掉头区
-    stage3_x, stage3_y = insert_point(flg_x[bar_num-1], flg_y[bar_num-1], x[1], y[1], 20)
+    stage1_x, stage1_y = insert_point(x[0],y[0],flg_x[0],flg_y[0], 30)
+    del stage1_x[18:]
+    del stage1_y[18:]
     #掉头
-    stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05, - np.pi / 1.3, np.pi / 4.5, 30)
+    if y[1] < flg_y[bar_num-1] and x[1] < flg_x[bar_num-1]:
+        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+    elif y[1] > flg_y[bar_num-1] and x[1] < flg_x[bar_num-1]:
+        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+    elif y[1] < flg_y[bar_num-1] and x[1] > flg_x[bar_num-1]:
+        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+    else:
+        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
+    #过s弯到掉头区
+    stage3_x, stage3_y = insert_point(flg_x[bar_num-1], flg_y[bar_num-1], stage4_x[1], stage4_y[1], 20)
     #大圆环
     stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.36e-05, - np.pi / 4, np.pi * 2.9, 80)
     #掉头点到大圆环
@@ -214,7 +226,7 @@ if __name__ == "__main__":
         if i < len(flag_x):
             ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
 
-    ax1.plot(outx, outy, 'ro')
+    ax1.plot(x, y, 'ro')
     ax1.plot(b_x, b_y, 'y-')
     plt.show()
     while True:
