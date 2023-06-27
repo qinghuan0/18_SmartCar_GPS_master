@@ -1,7 +1,7 @@
 # -------------------------------
 # GPS_master
 # author:恩
-# version:2.1
+# version:3.0
 # -------------------------------
 
 # ------------------导入库--------------------
@@ -18,8 +18,8 @@ from GPS_system import make_code
 from scipy.special import comb
 
 #-----------------宏定义----------------
-z_speed = 12  # 直道速度
-s_speed = 6  # 弯道速度
+z_speed = 16  # 直道速度
+s_speed = 10  # 弯道速度
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
