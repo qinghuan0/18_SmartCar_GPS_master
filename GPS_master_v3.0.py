@@ -18,16 +18,8 @@ from GPS_system import make_code
 from scipy.special import comb
 
 #-----------------宏定义----------------
-stage1 = 110  #阶段1
-stage2 = 420
-stage3 = 425
-stage4 = 500
-stage5 = 510
-stage6 = 800
-
 z_speed = 12  # 直道速度
-s_speed = 6  # s弯速度
-y_speed = 6  # 圆环速度
+s_speed = 6  # 弯道速度
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -134,6 +126,35 @@ def insert_point(x1, y1, x2, y2, num):
 
     return xx,yy
 
+def calculate_curvature(x, y):
+    # 计算曲线上各点的曲率
+    dx_dt = np.gradient(x)
+    dy_dt = np.gradient(y)
+    d2x_dt2 = np.gradient(dx_dt)
+    d2y_dt2 = np.gradient(dy_dt)
+
+    curvature = np.abs(d2x_dt2 * dy_dt - dx_dt * d2y_dt2) / (dx_dt ** 2 + dy_dt ** 2) ** 1.5
+    return curvature
+
+def filter_points(x, y, threshold):
+    # 根据曲率筛选点
+    curvature = calculate_curvature(x, y)
+    filtered_x = []
+    filtered_y = []
+    speed = []
+    for i in range(len(x)):
+        if curvature[i] >= threshold:
+            if i % 3 == 0:
+                filtered_x.append(x[i])
+                filtered_y.append(y[i])
+                speed.append(s_speed)
+        else:
+            if i % 60 == 0:
+                filtered_x.append(x[i])
+                filtered_y.append(y[i])
+                speed.append(z_speed)
+    return filtered_x, filtered_y, speed
+
 def make_curve(x, y, flg_x, flg_y, bar_num):
     o_x = []
     o_y = []
@@ -159,45 +180,7 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     curve_points_x, curve_points_y = interpolate_points(curve_x, curve_y, 5)
     o_x.append(curve_points_x[0])
     o_y.append(curve_points_y[0])
-    speed.append(z_speed)
-    for i in range(1000):
-        ii = i + 1
-        if ii <= stage1:  # 直道1
-            if ii % 180 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-        if ii > stage1 and ii <= stage2:  # s弯
-            if (ii - 180) % 6 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(s_speed)
-        if ii > stage2 and ii <= stage3:  # 直道2
-            if (ii - 510) % 100 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-        if ii > stage3 and ii <= stage4:  # 掉头
-            if (ii - 690) % 6 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(y_speed)
-        if ii > stage4 and ii <= stage5:  # 直道3
-            if (ii - 690) % 50 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-        if ii > stage5 and ii <= stage6:  # 大圆环
-            if (ii - 690) % 6 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(y_speed)
-        if ii > stage6 and ii <= len(curve_points_x):  # 直道
-            if (ii - 690) % 300 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-
+    o_x,o_y,speed=filter_points(curve_points_x,curve_points_y,50000) #滤点
     o_x.append(curve_points_x[-1])
     o_y.append(curve_points_y[-1])
     speed.append(z_speed)
@@ -233,12 +216,6 @@ if __name__ == "__main__":
 
     ax1.plot(outx, outy, 'ro')
     ax1.plot(b_x, b_y, 'y-')
-    ax1.text(b_x[stage1] + 0.000005, b_y[stage1] + 0.000005, 'stage1', weight="bold", color="r", fontsize=7)
-    ax1.text(b_x[stage2] + 0.000005, b_y[stage2] + 0.000005, 'stage2', weight="bold", color="r", fontsize=7)
-    ax1.text(b_x[stage3] + 0.000005, b_y[stage3] + 0.000005, 'stage3', weight="bold", color="r", fontsize=7)
-    ax1.text(b_x[stage4] + 0.000005, b_y[stage4] + 0.000005, 'stage4', weight="bold", color="r", fontsize=7)
-    ax1.text(b_x[stage5] + 0.000005, b_y[stage5] + 0.000005, 'stage5', weight="bold", color="r", fontsize=7)
-    ax1.text(b_x[stage6] + 0.000005, b_y[stage6] + 0.000005, 'stage6', weight="bold", color="r", fontsize=7)
     plt.show()
     while True:
         msg = "请选择你的操作"
@@ -272,10 +249,4 @@ if __name__ == "__main__":
 
             ax1.plot(outx, outy, 'ro')
             ax1.plot(b_x, b_y, 'y-')
-            ax1.text(b_x[stage1] + 0.000005, b_y[stage1] + 0.000005, 'stage1', weight="bold", color="r", fontsize=7)
-            ax1.text(b_x[stage2] + 0.000005, b_y[stage2] + 0.000005, 'stage2', weight="bold", color="r", fontsize=7)
-            ax1.text(b_x[stage3] + 0.000005, b_y[stage3] + 0.000005, 'stage3', weight="bold", color="r", fontsize=7)
-            ax1.text(b_x[stage4] + 0.000005, b_y[stage4] + 0.000005, 'stage4', weight="bold", color="r", fontsize=7)
-            ax1.text(b_x[stage5] + 0.000005, b_y[stage5] + 0.000005, 'stage5', weight="bold", color="r", fontsize=7)
-            ax1.text(b_x[stage6] + 0.000005, b_y[stage6] + 0.000005, 'stage6', weight="bold", color="r", fontsize=7)
             plt.show()
