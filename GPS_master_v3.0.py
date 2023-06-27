@@ -16,11 +16,12 @@ import os
 from GPS_system import read_point
 from GPS_system import make_code
 from scipy.special import comb
+from GPS_system import Point_Move
 
 #-----------------宏定义----------------
 z_speed = 16  # 直道速度
 s_speed = 10  # 弯道速度
-bar_num = 7 #锥桶数量
+bar_num = 4 #锥桶数量
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -218,24 +219,40 @@ if __name__ == "__main__":
 
     # 读点
     x, y, flag_x, flag_y = read_point(setname + ".txt")
+    b_x, b_y, outx, outy, speed_control = make_curve(x, y, flag_x, flag_y, bar_num)
     outname = None
 
     # --------------------------取点完成------------------------------
-    fig1, ax1 = plt.subplots()
-    b_x, b_y, outx, outy ,speed_control= make_curve(x, y, flag_x, flag_y , bar_num)
-    for i in range(len(flag_x)):
-        ax1.plot(flag_x[i], flag_y[i], 'bo')
-        if i < len(flag_x):
-            ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
+    # 这里复制一份留着复位使用
+    routx = x.copy()
+    routy = y.copy()
 
-    ax1.plot(x, y, 'ro')
-    ax1.plot(b_x, b_y, 'y-')
-    plt.show()
+    # 调用可调plot类
+    mygps = Point_Move(x,y,flag_x,flag_y)
+    # fig1, ax1 = plt.subplots()
+    # for i in range(len(flag_x)):
+    #     ax1.plot(flag_x[i], flag_y[i], 'bo')
+    #     if i < len(flag_x):
+    #         ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
+    #
+    # ax1.plot(outx, outy, 'ro')
+    # ax1.plot(b_x, b_y, 'y-')
+    # plt.show()
     while True:
         msg = "请选择你的操作"
         title = "gps-system"
-        choices = ["开始拟合","输出代码", "退出系统"]
+        choices = ["修改点位","点位复位","开始拟合","输出代码", "退出系统"]
         choice = g.choicebox(msg, title, choices)
+
+        if choice == '修改点位':
+            mygps.__init__(x, y, flag_x, flag_y)
+
+        if choice == '点位复位':
+            x = routx
+            y = routy
+            routx = x.copy()
+            routy = y.copy()
+            mygps.__init__(x, y, flag_x, flag_y)
 
         if choice == '输出代码':
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
