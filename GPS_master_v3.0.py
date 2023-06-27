@@ -19,11 +19,11 @@ from scipy.special import comb
 
 #-----------------宏定义----------------
 stage1 = 110  #阶段1
-stage2 = 285
-stage3 = 420
-stage4 = 470
-stage5 = 520
-stage6 = 650
+stage2 = 420
+stage3 = 425
+stage4 = 500
+stage5 = 510
+stage6 = 800
 
 z_speed = 12  # 直道速度
 s_speed = 6  # s弯速度
