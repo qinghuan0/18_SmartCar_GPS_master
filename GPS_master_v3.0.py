@@ -20,6 +20,7 @@ from scipy.special import comb
 #-----------------宏定义----------------
 z_speed = 16  # 直道速度
 s_speed = 10  # 弯道速度
+bar_num = 7 #锥桶数量
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -74,11 +75,12 @@ def s_bend(x_coords, y_coords, num_points):
         arc_points_x.extend(circle_points_x)
         arc_points_y.extend(circle_points_y)
 
+    #最后一个
     x1, y1 = x_coords[-2], y_coords[-2]
     x2, y2 = x_coords[-1], y_coords[-1]
     distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     radius = distance / 1.2
-    if len(x_coords)-1 % 2 == 0:  # 上半圆弧
+    if len(x_coords) % 2 != 0:  # 上半圆弧
         angles = np.linspace(np.pi / 4, np.pi / 2, num_points+1)
         circle_points_x = x2 + radius * np.cos(angles)
         circle_points_y = y2 + radius * np.sin(angles)
@@ -161,7 +163,6 @@ def filter_points(x, y, threshold):
 def make_curve(x, y, flg_x, flg_y, bar_num):
     o_x = []
     o_y = []
-    speed = []
     # s弯
     stage2_x, stage2_y = s_bend(flg_x[:bar_num], flag_y[:bar_num], 16)
     # 起点到第一个锥桶
@@ -173,8 +174,10 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
         stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
     elif y[1] > flg_y[bar_num-1] and x[1] < flg_x[bar_num-1]:
         stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
-    elif y[1] < flg_y[bar_num-1] and x[1] > flg_x[bar_num-1]:
+    elif y[1] < flg_y[bar_num - 1] and x[1] > flg_x[bar_num - 1] and y[0]>y[-1]:
         stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+    elif y[1] < flg_y[bar_num-1] and x[1] > flg_x[bar_num-1] and y[0]<y[-1]:
+        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
     else:
         stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
     #过s弯到掉头区
@@ -218,7 +221,6 @@ if __name__ == "__main__":
     outname = None
 
     # --------------------------取点完成------------------------------
-    bar_num = 4 #锥桶数量
     fig1, ax1 = plt.subplots()
     b_x, b_y, outx, outy ,speed_control= make_curve(x, y, flag_x, flag_y , bar_num)
     for i in range(len(flag_x)):
