@@ -62,7 +62,6 @@ def read_point(file_name):
 # ---------------生成程序函数-------------------------
 def make_code(x, y, speed ,your_name):
     # -----------save---txt--------------
-
     n = len(x)
     with open(your_name, "w") as file:
         file.truncate()  # 清空文本
