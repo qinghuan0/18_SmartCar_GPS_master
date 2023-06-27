@@ -21,7 +21,7 @@ from GPS_system import Point_Move
 #-----------------宏定义----------------
 z_speed = 16  # 直道速度
 s_speed = 10  # 弯道速度
-bar_num = 4 #锥桶数量
+bar_num = 7 #锥桶数量
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -44,6 +44,7 @@ def interpolate_points(x, y ,n):
 def s_bend(x_coords, y_coords, num_points):
     arc_points_x = []
     arc_points_y = []
+    last_radius = 0
 
     for i in range(len(x_coords)-1):
         x1, y1 = x_coords[i], y_coords[i]
@@ -57,6 +58,8 @@ def s_bend(x_coords, y_coords, num_points):
             radius = distance / 2
         else:
             radius = distance / 1.2
+
+        # radius = ((distance / 2) + distance / 2) / 2
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
@@ -75,6 +78,8 @@ def s_bend(x_coords, y_coords, num_points):
 
         arc_points_x.extend(circle_points_x)
         arc_points_y.extend(circle_points_y)
+
+        last_radius = radius
 
     #最后一个
     x1, y1 = x_coords[-2], y_coords[-2]
@@ -227,17 +232,15 @@ if __name__ == "__main__":
     routx = x.copy()
     routy = y.copy()
 
-    # 调用可调plot类
-    mygps = Point_Move(x,y,flag_x,flag_y)
-    # fig1, ax1 = plt.subplots()
-    # for i in range(len(flag_x)):
-    #     ax1.plot(flag_x[i], flag_y[i], 'bo')
-    #     if i < len(flag_x):
-    #         ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
-    #
-    # ax1.plot(outx, outy, 'ro')
-    # ax1.plot(b_x, b_y, 'y-')
-    # plt.show()
+    fig1, ax1 = plt.subplots()
+    for i in range(len(flag_x)):
+        ax1.plot(flag_x[i], flag_y[i], 'bo')
+        if i < len(flag_x):
+            ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
+
+    ax1.plot(outx, outy, 'ro')
+    ax1.plot(b_x, b_y, 'y-')
+    plt.show()
     while True:
         msg = "请选择你的操作"
         title = "gps-system"
@@ -245,14 +248,14 @@ if __name__ == "__main__":
         choice = g.choicebox(msg, title, choices)
 
         if choice == '修改点位':
-            mygps.__init__(x, y, flag_x, flag_y)
+            mygps = Point_Move(x, y, flag_x, flag_y)
 
         if choice == '点位复位':
             x = routx
             y = routy
             routx = x.copy()
             routy = y.copy()
-            mygps.__init__(x, y, flag_x, flag_y)
+            mygps = Point_Move(x, y, flag_x, flag_y)
 
         if choice == '输出代码':
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
