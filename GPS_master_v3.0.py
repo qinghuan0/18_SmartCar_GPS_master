@@ -19,8 +19,8 @@ from scipy.special import comb
 from GPS_system import Point_Move
 
 #-----------------宏定义----------------
-z_speed = 16  # 直道速度
-s_speed = 12  # 弯道速度
+z_speed = 14  # 直道速度
+s_speed = 10  # 弯道速度
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -62,17 +62,18 @@ def s_bend(x_coords, y_coords, num_points):
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
-                radius = distance / 2
+                radius = distance / 1.6
                 if x_coords[0] > x_coords[1]:
                     angles = np.linspace(-np.pi / 4, np.pi * 4 / 5, num_points + 6)
                 else:
                     angles = np.linspace(np.pi * 4 / 5 , -np.pi / 4 , num_points+6)
             else:
-                angles = np.linspace(np.pi / 5, np.pi / 2, num_points+1)
+                radius += last_radius * 0.2
+                angles = np.linspace(np.pi / 5, np.pi / 2.4, num_points+1)
             circle_points_x = x1 + radius * np.cos(angles)
             circle_points_y = y1 + radius * np.sin(angles)
         else:  # 下半圆弧
-            angles = np.linspace(np.pi / 5, np.pi / 2, num_points)
+            angles = np.linspace(np.pi / 5, np.pi / 2.2, num_points)
             circle_points_x = x1 - radius * np.cos(angles)
             circle_points_y = y1 - radius * np.sin(angles)
 
@@ -85,7 +86,7 @@ def s_bend(x_coords, y_coords, num_points):
     x1, y1 = x_coords[-2], y_coords[-2]
     x2, y2 = x_coords[-1], y_coords[-1]
     distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    radius = distance / 2.4
+    radius = distance / 1.8
     if len(x_coords) % 2 != 0:  # 上半圆弧
         angles = np.linspace(np.pi / 4, np.pi / 2, num_points+1)
         circle_points_x = x2 + radius * np.cos(angles)
@@ -160,10 +161,15 @@ def filter_points(x, y, threshold):
                 filtered_y.append(y[i])
                 speed.append(s_speed)
         else:
-            if i % 60 == 0:
+            if i % 22 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
                 speed.append(z_speed)
+
+    for j in range(1,len(speed)-1):
+        if speed[j] == z_speed:
+            if speed[j-1] == speed[j+1] == s_speed:
+                speed[j] = s_speed
     return filtered_x, filtered_y, speed
 
 def make_curve(x, y, flg_x, flg_y, bar_num):
@@ -188,11 +194,11 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     stage3_x, stage3_y = insert_point(flg_x[bar_num-1], flg_y[bar_num-1], stage4_x[1], stage4_y[1], 20)
     #大圆环
     if x[1] > flg_x[bar_num]:
-        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.4e-05,  np.pi / 4, - np.pi * 2.9, 80)
+        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 2.3e-05,  np.pi / 4, - np.pi * 2.9, 80)
     if x[1] < flg_x[bar_num] and y[0] < flg_y[bar_num]:
-        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.4e-05,  np.pi / 4, - np.pi * 2.9, 80)
+        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 2.3e-05,  np.pi / 4, - np.pi * 2.9, 80)
     else:
-        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.4e-05, - np.pi / 4, np.pi * 2.9, 80)
+        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 2.3e-05, - np.pi / 4, np.pi * 2.9, 80)
     #掉头点到大圆环
     stage5_x, stage5_y = insert_point(x[1], y[1], stage6_x[-6], stage6_y[-6], 15)
     #大圆环到终点
@@ -202,7 +208,9 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     y_list = stage1_y + stage2_y + stage3_y + stage4_y + stage5_y + stage6_y + stage7_y
     curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
     curve_points_x, curve_points_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
-    o_x,o_y,speed=filter_points(curve_points_x,curve_points_y,50000) #滤点
+    o_x,o_y,speed=filter_points(curve_points_x,curve_points_y,20000) #滤点
+    # del o_x[-2:]
+    # del o_y[-2:]
     o_x.append(curve_points_x[-1])
     o_y.append(curve_points_y[-1])
     speed.append(z_speed)
@@ -231,8 +239,8 @@ if __name__ == "__main__":
 
     # --------------------------取点完成------------------------------
     # 这里复制一份留着复位使用
-    routx = x.copy()
-    routy = y.copy()
+    routx = flag_x.copy()
+    routy = flag_y.copy()
 
     fig1, ax1 = plt.subplots()
     for i in range(len(flag_x)):
@@ -240,7 +248,7 @@ if __name__ == "__main__":
         if i < len(flag_x):
             ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
 
-    ax1.plot(outx, outy, 'ro')
+    ax1.plot(outx, outy, 'ro-')
     ax1.plot(b_x, b_y, 'y-')
     plt.show()
     while True:
@@ -250,14 +258,14 @@ if __name__ == "__main__":
         choice = g.choicebox(msg, title, choices)
 
         if choice == '修改点位':
-            mygps = Point_Move(x, y, flag_x, flag_y)
+            mygps = Point_Move(flag_x, flag_y, x, y)
 
         if choice == '点位复位':
             x = routx
             y = routy
-            routx = x.copy()
-            routy = y.copy()
-            mygps = Point_Move(x, y, flag_x, flag_y)
+            routx = flag_x.copy()
+            routy = flag_y.copy()
+            mygps = Point_Move(flag_x, flag_y, x, y)
 
         if choice == '输出代码':
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
@@ -273,6 +281,7 @@ if __name__ == "__main__":
             if g.ccbox(msg, title, ('继续操作', '退出')):
                 pass  # 如果继续操作
             else:
+
                 sys.exit(0)  # 如果退出
 
         if choice == '开始拟合':
@@ -283,6 +292,6 @@ if __name__ == "__main__":
                 if i < len(flag_x):
                     ax1.text(flag_x[i] + 0.000005, flag_y[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
 
-            ax1.plot(outx, outy, 'ro')
+            ax1.plot(outx, outy, 'ro-')
             ax1.plot(b_x, b_y, 'y-')
             plt.show()
