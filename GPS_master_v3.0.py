@@ -58,20 +58,20 @@ def s_bend(x_coords, y_coords, num_points):
         # else:
         #     radius = distance / 1.2
 
-        radius = ((distance / 2) + last_radius*1.4) / 2
+        radius = ((distance / 2)*0.6 + last_radius*1.4) / 2
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
                 if x_coords[0] > x_coords[1]:
                     angles = np.linspace(-np.pi / 4, np.pi * 4 / 5, num_points + 6)
                 else:
-                    angles = np.linspace(np.pi * 4 / 5 , -np.pi / 2 , num_points+6)
+                    angles = np.linspace(np.pi * 4 / 5 , -np.pi / 4 , num_points+6)
             else:
-                angles = np.linspace(np.pi / 4, np.pi / 2, num_points+1)
+                angles = np.linspace(np.pi / 5, np.pi / 2, num_points+1)
             circle_points_x = x1 + radius * np.cos(angles)
             circle_points_y = y1 + radius * np.sin(angles)
         else:  # 下半圆弧
-            angles = np.linspace(np.pi / 4, np.pi / 2, num_points)
+            angles = np.linspace(np.pi / 5, np.pi / 2, num_points)
             circle_points_x = x1 - radius * np.cos(angles)
             circle_points_y = y1 - radius * np.sin(angles)
 
@@ -84,7 +84,7 @@ def s_bend(x_coords, y_coords, num_points):
     x1, y1 = x_coords[-2], y_coords[-2]
     x2, y2 = x_coords[-1], y_coords[-1]
     distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    radius = distance / 2
+    radius = distance / 2.4
     if len(x_coords) % 2 != 0:  # 上半圆弧
         angles = np.linspace(np.pi / 4, np.pi / 2, num_points+1)
         circle_points_x = x2 + radius * np.cos(angles)
