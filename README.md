@@ -10,7 +10,7 @@
 ## 使用方法
 1.首先运行point_write.py文件，将GPS原始点位保存至.txt文件中
 
-2.运行GPS_system.py文件，输入存储GPS原始点位的文件名称
+2.运行GPS_master_v3.0.py文件，输入存储GPS原始点位的文件名称
 
 3.首先展示原始点位图
 
