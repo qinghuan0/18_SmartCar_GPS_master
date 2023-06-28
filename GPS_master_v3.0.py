@@ -58,7 +58,7 @@ def s_bend(x_coords, y_coords, num_points):
         # else:
         #     radius = distance / 1.2
 
-        radius = ((distance / 2) + last_radius*1.8) / 2
+        radius = ((distance / 2) + last_radius*1.4) / 2
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
