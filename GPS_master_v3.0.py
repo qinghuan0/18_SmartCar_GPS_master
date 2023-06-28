@@ -21,7 +21,6 @@ from GPS_system import Point_Move
 #-----------------宏定义----------------
 z_speed = 16  # 直道速度
 s_speed = 10  # 弯道速度
-bar_num = 4 #锥桶数量
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -222,6 +221,8 @@ if __name__ == "__main__":
             if os.path.exists(setname + '.txt') != True:
                 g.msgbox("请确定你的路径下是否有该配置文件！！！", "gps-system")
 
+    #输入锥桶个数
+    bar_num = int(g.enterbox(msg='锥桶个数', title=' ', default='4', strip=True, image=None, root=None))
     # 读点
     x, y, flag_x, flag_y = read_point(setname + ".txt")
     b_x, b_y, outx, outy, speed_control = make_curve(x, y, flag_x, flag_y, bar_num)
