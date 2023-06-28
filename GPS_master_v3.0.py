@@ -21,7 +21,7 @@ from GPS_system import Point_Move
 #-----------------宏定义----------------
 z_speed = 16  # 直道速度
 s_speed = 10  # 弯道速度
-bar_num = 7 #锥桶数量
+bar_num = 4 #锥桶数量
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -54,12 +54,12 @@ def s_bend(x_coords, y_coords, num_points):
         distance = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
         # 计算半径和角度增量
-        if i == 0:
-            radius = distance / 2
-        else:
-            radius = distance / 1.2
+        # if i == 0:
+        #     radius = distance / 2
+        # else:
+        #     radius = distance / 1.2
 
-        # radius = ((distance / 2) + distance / 2) / 2
+        radius = ((distance / 2) + last_radius*1.8) / 2
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
@@ -85,7 +85,7 @@ def s_bend(x_coords, y_coords, num_points):
     x1, y1 = x_coords[-2], y_coords[-2]
     x2, y2 = x_coords[-1], y_coords[-1]
     distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    radius = distance / 1.2
+    radius = distance / 2
     if len(x_coords) % 2 != 0:  # 上半圆弧
         angles = np.linspace(np.pi / 4, np.pi / 2, num_points+1)
         circle_points_x = x2 + radius * np.cos(angles)
