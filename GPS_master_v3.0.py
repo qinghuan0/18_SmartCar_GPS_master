@@ -188,7 +188,7 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     #过s弯到掉头区
     stage3_x, stage3_y = insert_point(flg_x[bar_num-1], flg_y[bar_num-1], stage4_x[1], stage4_y[1], 20)
     #大圆环
-    stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.36e-05, - np.pi / 4, np.pi * 2.9, 80)
+    stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1e-05, - np.pi / 4, np.pi * 2.9, 80)
     #掉头点到大圆环
     stage5_x, stage5_y = insert_point(x[1], y[1], stage6_x[0], stage6_y[0], 15)
     #大圆环到终点
