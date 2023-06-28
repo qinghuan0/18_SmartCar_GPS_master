@@ -20,7 +20,7 @@ from GPS_system import Point_Move
 
 #-----------------宏定义----------------
 z_speed = 16  # 直道速度
-s_speed = 10  # 弯道速度
+s_speed = 12  # 弯道速度
 
 # ----------------------------My_function-----------------------------------------------
 def interpolate_points(x, y ,n):
@@ -58,10 +58,11 @@ def s_bend(x_coords, y_coords, num_points):
         # else:
         #     radius = distance / 1.2
 
-        radius = ((distance / 2)*0.6 + last_radius*1.4) / 2
+        radius = ((distance / 1.4)*0.6 + last_radius*1.4) / 2
 
         if i % 2 == 0:  # 上半圆弧
             if i == 0:
+                radius = distance / 2
                 if x_coords[0] > x_coords[1]:
                     angles = np.linspace(-np.pi / 4, np.pi * 4 / 5, num_points + 6)
                 else:
@@ -166,8 +167,6 @@ def filter_points(x, y, threshold):
     return filtered_x, filtered_y, speed
 
 def make_curve(x, y, flg_x, flg_y, bar_num):
-    o_x = []
-    o_y = []
     # s弯
     stage2_x, stage2_y = s_bend(flg_x[:bar_num], flag_y[:bar_num], 16)
     # 起点到第一个锥桶
@@ -176,37 +175,39 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     del stage1_y[18:]
     #掉头
     if y[1] < flg_y[bar_num-1] and x[1] < flg_x[bar_num-1]:
-        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+        stage4_x, stage4_y = ring(x[1], y[1], 0.9e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
     elif y[1] > flg_y[bar_num-1] and x[1] < flg_x[bar_num-1]:
-        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+        stage4_x, stage4_y = ring(x[1], y[1], 0.9e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
     elif y[1] < flg_y[bar_num - 1] and x[1] > flg_x[bar_num - 1] and y[0]>y[-1]:
-        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
+        stage4_x, stage4_y = ring(x[1], y[1], 0.9e-05,  np.pi / 1.3, - np.pi / 4.5, 30)
     elif y[1] < flg_y[bar_num-1] and x[1] > flg_x[bar_num-1] and y[0]<y[-1]:
-        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
+        stage4_x, stage4_y = ring(x[1], y[1], 0.9e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
     else:
-        stage4_x, stage4_y = ring(x[1], y[1], 1.75e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
+        stage4_x, stage4_y = ring(x[1], y[1], 0.9e-05, - np.pi / 1.3,  np.pi / 4.5, 30)
     #过s弯到掉头区
     stage3_x, stage3_y = insert_point(flg_x[bar_num-1], flg_y[bar_num-1], stage4_x[1], stage4_y[1], 20)
     #大圆环
-    stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1e-05, - np.pi / 4, np.pi * 2.9, 80)
+    if x[1] > flg_x[bar_num]:
+        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.4e-05,  np.pi / 4, - np.pi * 2.9, 80)
+    if x[1] < flg_x[bar_num] and y[0] < flg_y[bar_num]:
+        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.4e-05,  np.pi / 4, - np.pi * 2.9, 80)
+    else:
+        stage6_x, stage6_y = ring(flg_x[bar_num], flg_y[bar_num], 1.4e-05, - np.pi / 4, np.pi * 2.9, 80)
     #掉头点到大圆环
-    stage5_x, stage5_y = insert_point(x[1], y[1], stage6_x[0], stage6_y[0], 15)
+    stage5_x, stage5_y = insert_point(x[1], y[1], stage6_x[-6], stage6_y[-6], 15)
     #大圆环到终点
     stage7_x, stage7_y = insert_point(stage6_x[-1], stage6_y[-1], x[2], y[2], 50)
 
     x_list = stage1_x + stage2_x + stage3_x + stage4_x + stage5_x + stage6_x + stage7_x
     y_list = stage1_y + stage2_y + stage3_y + stage4_y + stage5_y + stage6_y + stage7_y
     curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
-    curve_points_x, curve_points_y = interpolate_points(curve_x, curve_y, 5)
-    o_x.append(curve_points_x[0])
-    o_y.append(curve_points_y[0])
+    curve_points_x, curve_points_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
     o_x,o_y,speed=filter_points(curve_points_x,curve_points_y,50000) #滤点
     o_x.append(curve_points_x[-1])
     o_y.append(curve_points_y[-1])
     speed.append(z_speed)
 
     return curve_points_x,curve_points_y,o_x,o_y,speed
-
 
 # ----------------------------My_function-----------------------------------------------
 

@@ -69,18 +69,18 @@ def make_code(x, y, speed ,your_name):
         for i in range(0, n):
             x[i] = round(x[i],6)
             file.write(str(x[i]) + ',')
-            if i % 5 == 0 and i != 0:
+            if i % 8 == 0 and i != 0:
                 file.write("\n")
         file.write("\n*********************la***********************\n")
         for i in range(0, n):
             y[i] = round(y[i], 6)
             file.write(str(y[i]) + ',')
-            if i % 5 == 0 and i != 0:
+            if i % 8 == 0 and i != 0:
                 file.write("\n")
         file.write("\n******************velocity*********************\n")
         for i in range(0, n):
             file.write(str(speed[i]) + ',')
-            if i % 5 == 0 and i != 0:
+            if i % 8 == 0 and i != 0:
                 file.write("\n")
 
 # --------------------拟合曲线函数----------------------------
