@@ -249,11 +249,11 @@ def s_y__p(x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
     del stage1_x[18:]
     del stage1_y[18:]
     #大圆环
-    if y[1]<flg_y[bar_num] and flg_x[0]<flg_x[1]: #起点在左上角且向右掉头
+    if x[0]<x[1] and y[-1]<y[0]: #起点在左上角且向右掉头
         stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05,  np.pi / 1.5, - np.pi * 2, 80)
-    elif y[1]>flg_y[bar_num] and flg_x[0]<flg_x[1]: #起点在左上角且向左掉头
+    elif x[0] < x[1] and y[-1] > y[0]:  # 起点在左上角且向左掉头
         stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, - np.pi * 2, np.pi / 1.5, 80)
-    elif y[1]>flg_y[bar_num] and flg_x[0]>flg_x[1]: #起点右下角且向右掉头
+    elif x[0] > x[1] and y[-1] > y[0]:  # 起点右下角且向右掉头
         stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, np.pi * 1.5, - np.pi * 1.5, 80)
     else:
         stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, - np.pi * 2, np.pi / 1.5 , 80)
@@ -285,12 +285,11 @@ def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
     #坡道到掉头区
     stage3_x, stage3_y = insert_point(stage2_x[-1], stage2_y[-1], x[3], y[3], 30)
     #大圆环
-    if x[0]<x[1] and flg_x[0]>flg_x[1]: #起点在左上角且向右掉头
+    if x[0]<x[1] and y[-1]<y[0]: #起点在左上角且向右掉头
         stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, np.pi * 1.5, - np.pi , 80)
-        # stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05   ,  np.pi / 1.5, - np.pi * 2, 80)
-    elif x[0]<x[1] and y[3]<flg_y[0]: #起点在左上角且向左掉头
-        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi * 2, np.pi / 1.5, 80)
-    elif x[0]>x[1] and flg_x[0]<flg_x[1]: #起点右下角且向右掉头
+    elif x[0]<x[1] and y[-1]>y[0]: #起点在左上角且向左掉头
+        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi * 2, np.pi / 2.5 , 80)
+    elif x[0]>x[1] and y[-1]>y[0]: #起点右下角且向右掉头
         stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, np.pi * 1.5, - np.pi * 1.5, 80)
     else:
         stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi * 2, np.pi / 2.5 , 80)
@@ -335,7 +334,7 @@ if __name__ == "__main__":
     bar_num = int(g.enterbox(msg='锥桶个数', title=' ', default='4', strip=True, image=None, root=None))
     # 读点
     x, y, flag_x, flag_y = read_point(setname + ".txt")
-    b_x, b_y, outx, outy, speed_control = p__y_s(x, y, flag_x, flag_y, bar_num)
+    b_x, b_y, outx, outy, speed_control = s_y__p(x, y, flag_x, flag_y, bar_num)
     outname = None
 
     # --------------------------取点完成------------------------------
