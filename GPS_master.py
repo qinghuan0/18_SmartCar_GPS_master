@@ -20,7 +20,7 @@ from GPS_system import Point_Move
 
 #-----------------宏定义----------------
 z_speed = 14  # 直道速度
-s_speed = 10  # 弯道速度
+s_speed = 8  # 弯道速度
 
 # ----------------------------My_function-----------------------------------------------
 def make_map(x, y, flg_x, flg_y, your_name):
@@ -180,11 +180,18 @@ def filter_points(x, y, threshold):
     speed = []
     for i in range(len(x)):
         if curvature[i] >= threshold:
-            if i % 3 == 0:
+            if i % 7 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
                 speed.append(s_speed)
         else:
+            if i < len(x)-1 and curvature[i+1] >= threshold:
+                filtered_x.append(x[i-2])
+                filtered_y.append(y[i-2])
+                speed.append(s_speed)
+                filtered_x.append(x[i])
+                filtered_y.append(y[i])
+                speed.append(s_speed)
             if i % 22 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
@@ -194,6 +201,8 @@ def filter_points(x, y, threshold):
         if speed[j] == z_speed:
             if speed[j-1] == speed[j+1] == s_speed:
                 speed[j] = s_speed
+            if speed[j-1] == s_speed and speed[j+1] == z_speed:
+                speed[j-1] = z_speed
     return filtered_x, filtered_y, speed
 
 def s__y_p(x, y, flg_x, flg_y, bar_num): #先过s弯，掉头过圆环和坡道
@@ -279,20 +288,20 @@ def s_y__p(x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
 
 def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
     # 起点到坡道
-    stage1_x, stage1_y = insert_point(x[0],y[0],2* x[1]-((x[1]+x[2])/2), 2* y[1]-((y[1]+y[2])/2), 30)
+    stage1_x, stage1_y = insert_point(x[0],y[0],2* x[1]-((x[1]+x[2])/2), 2* y[1]-((y[1]+y[2])/2), 15)
     #坡道
-    stage2_x, stage2_y = insert_point(stage1_x[-1], stage1_y[-1], x[2], y[2], 45)
+    stage2_x, stage2_y = insert_point(stage1_x[-1], stage1_y[-1], 2 * x[2] - x[1], 2 * y[2] - y[1], 150)
     #坡道到掉头区
-    stage3_x, stage3_y = insert_point(stage2_x[-1], stage2_y[-1], x[3], y[3], 30)
+    stage3_x, stage3_y = insert_point(stage2_x[-1], stage2_y[-1], x[3], y[3], 10)
     #大圆环
     if x[0]<x[1] and y[-1]<y[0]: #起点在左上角且向右掉头
-        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, np.pi * 1.5, - np.pi , 80)
+        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 2e-05, np.pi * 1.5, - np.pi , 80)
     elif x[0]<x[1] and y[-1]>y[0]: #起点在左上角且向左掉头
-        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi * 2, np.pi / 2.5 , 80)
+        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 2e-05, - np.pi * 2, np.pi / 2.5 , 80)
     elif x[0]>x[1] and y[-1]>y[0]: #起点右下角且向右掉头
-        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, np.pi * 1.5, - np.pi * 1.5, 80)
+        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 2e-05, np.pi * 1.5, - np.pi * 1.5, 80)
     else:
-        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi , np.pi * 1.5 , 80)
+        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 2e-05, - np.pi , np.pi * 1.5 , 80)
     # 掉头点到圆环
     stage4_x, stage4_y = insert_point(stage3_x[-1], stage3_y[-1], stage5_x[0], stage5_y[0], 15)
     # 圆环到s弯
@@ -313,7 +322,7 @@ def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
     y_list = stage1_y + stage2_y +stage3_y + stage4_y + stage5_y + stage6_y + stage7_y + stage8_y
     curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
     curve_x, curve_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
-    o_x,o_y,speed=filter_points(curve_x,curve_y,20000) #滤点
+    o_x,o_y,speed=filter_points(curve_x,curve_y,10000) #滤点
     o_x.append(curve_x[-1])
     o_y.append(curve_y[-1])
     speed.append(z_speed)
@@ -336,7 +345,7 @@ if __name__ == "__main__":
     # ------------打开启动文件--------------------
     setname = ''
     while (os.path.exists(setname + '.txt') != True):
-        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'p__y_s_right_d')
+        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'rec_1')
         if setname == None:
             setname = ''
         else:
@@ -366,6 +375,12 @@ if __name__ == "__main__":
 
     ax1.plot(outx, outy, 'ro-')
     ax1.plot(b_x, b_y, 'y-')
+    ax1.plot(x[1:3], y[1:3], 'b-')
+    for i in range(0,len(speed_control)):
+        if i < 10:
+            speed_control[i] = z_speed
+        if speed_control[i] == z_speed:
+            ax1.plot(outx[i],outy[i], 'yo')
     plt.show()
     while True:
         msg = "请选择你的操作"
@@ -417,4 +432,8 @@ if __name__ == "__main__":
 
             ax1.plot(outx, outy, 'ro-')
             ax1.plot(b_x, b_y, 'y-')
+            ax1.plot(x[1:3], y[1:3], 'b-')
+            for i in range(0, len(speed_control)):
+                if speed_control[i] == z_speed:
+                    ax1.plot(outx[i], outy[i], 'yo')
             plt.show()
