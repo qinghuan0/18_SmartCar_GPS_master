@@ -65,23 +65,38 @@ def make_code(x, y, speed ,your_name):
     n = len(x)
     with open(your_name, "w") as file:
         file.truncate()  # 清空文本
-        file.write("\n*********************lo***********************\n")
+        file.write("/*\n"
+"* GPS_Point.h\n"
+"*\n"
+"*  Created on: 2023年6月10日\n"
+"*      Author: 恩\n"
+"*/\n"
+"\n"
+"\n"
+"#ifndef CODE_GPS_POINT_H_\n"
+"#define CODE_GPS_POINT_H_\n"
+"\n"
+"double lo_bezier[] = {\n")
         for i in range(0, n):
             x[i] = round(x[i],6)
             file.write(str(x[i]) + ',')
             if i % 8 == 0 and i != 0:
                 file.write("\n")
-        file.write("\n*********************la***********************\n")
+        file.write("\n};\n"
+                   "double la_bezier[] = {\n")
         for i in range(0, n):
             y[i] = round(y[i], 6)
             file.write(str(y[i]) + ',')
             if i % 8 == 0 and i != 0:
                 file.write("\n")
-        file.write("\n******************velocity*********************\n")
+        file.write("\n};\n"
+                   "int Speed[] = {\n")
         for i in range(0, n):
             file.write(str(speed[i]) + ',')
             if i % 8 == 0 and i != 0:
                 file.write("\n")
+        file.write("\n};\n")
+        file.write("\n#endif /* CODE_GPS_POINT_H_ */\n")
 
 # --------------------拟合曲线函数----------------------------
 def make_curve(control_points_x, control_points_y):

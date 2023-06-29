@@ -383,9 +383,10 @@ if __name__ == "__main__":
         if choice == '输出代码':
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
             if outname != None:
-                # make_code(outx, outy, speed_control,outname + '.txt')
-                make_map(x, y, flag_x, flag_y, outname + '.txt')
+                make_code(outx, outy, speed_control,outname + '.txt')
+                # make_map(x, y, flag_x, flag_y, outname + '.txt')
                 # g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
+
 
         if choice == '退出系统':
             msg = "退出系统吗？"
