@@ -292,7 +292,7 @@ def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
     elif x[0]>x[1] and y[-1]>y[0]: #起点右下角且向右掉头
         stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, np.pi * 1.5, - np.pi * 1.5, 80)
     else:
-        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi * 2, np.pi / 2.5 , 80)
+        stage5_x, stage5_y = ring(flg_x[0], flg_y[0], 1.6e-05, - np.pi , np.pi * 1.5 , 80)
     # 掉头点到圆环
     stage4_x, stage4_y = insert_point(stage3_x[-1], stage3_y[-1], stage5_x[0], stage5_y[0], 15)
     # 圆环到s弯
@@ -300,7 +300,10 @@ def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
     del stage1_x[22:]
     del stage1_y[22:]
     # s弯
-    stage7_x, stage7_y = s_bend(flg_x[1:], flag_y[1:], 16, 1)
+    if x[0] < x[1]:
+        stage7_x, stage7_y = s_bend(flg_x[1:], flag_y[1:], 16, 1)
+    else:
+        stage7_x, stage7_y = s_bend(flg_x[1:], flag_y[1:], 16)
     #s弯到终点
     stage8_x, stage8_y = insert_point(flg_x[-1], flg_y[-1], x[-1], y[-1], 30)
     del stage1_x[18:]
@@ -333,7 +336,7 @@ if __name__ == "__main__":
     # ------------打开启动文件--------------------
     setname = ''
     while (os.path.exists(setname + '.txt') != True):
-        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'p__y_s_left')
+        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'p__y_s_right_d')
         if setname == None:
             setname = ''
         else:
@@ -367,11 +370,11 @@ if __name__ == "__main__":
     while True:
         msg = "请选择你的操作"
         title = "gps-system"
-        choices = ["修改点位","点位复位","开始拟合","输出代码", "退出系统"]
+        choices = ["修改点位","点位复位","开始拟合","输出代码", "输出地图", "退出系统"]
         choice = g.choicebox(msg, title, choices)
 
         if choice == '修改点位':
-            mygps = Point_Move(x, y,flag_x, flag_y)
+            mygps = Point_Move(x, y, flag_x, flag_y)
 
         if choice == '点位复位':
             x = routx
@@ -384,7 +387,12 @@ if __name__ == "__main__":
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
             if outname != None:
                 make_code(outx, outy, speed_control,outname + '.txt')
-                # make_map(x, y, flag_x, flag_y, outname + '.txt')
+                # g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
+
+        if choice == '输出地图':
+            outname = g.enterbox("请输入生成文件名：", 'gps-system', 'p__y_s_right_d')
+            if outname != None:
+                make_map(x, y, flag_x, flag_y, outname + '.txt')
                 # g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
 
 
