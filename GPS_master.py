@@ -23,6 +23,22 @@ z_speed = 14  # 直道速度
 s_speed = 10  # 弯道速度
 
 # ----------------------------My_function-----------------------------------------------
+def make_map(x, y, flg_x, flg_y, your_name):
+    n = len(x)
+    n_f = len(flg_x)
+    with open(your_name, "w") as file:
+        for i in range(0, n):
+            x[i] = round(x[i], 6)
+            y[i] = round(y[i], 6)
+            file.write(str(x[i]) + ',')
+            file.write(str(y[i]) + '\n')
+        file.write("***\n")
+        for i in range(0, n_f):
+            flg_x[i] = round(flg_x[i], 6)
+            flg_y[i] = round(flg_y[i], 6)
+            file.write(str(flg_x[i]) + ',')
+            file.write(str(flg_y[i]) + '\n')
+
 def interpolate_points(x, y ,n):
     # 计算参数化曲线的参数 t
     t = np.linspace(0, 1, len(x))
@@ -180,7 +196,7 @@ def filter_points(x, y, threshold):
                 speed[j] = s_speed
     return filtered_x, filtered_y, speed
 
-def make_curve(x, y, flg_x, flg_y, bar_num):
+def s__y_p(x, y, flg_x, flg_y, bar_num): #先过s弯，掉头过圆环和坡道
     # s弯
     stage2_x, stage2_y = s_bend(flg_x[:bar_num], flag_y[:bar_num], 16)
     # 起点到第一个锥桶
@@ -224,22 +240,6 @@ def make_curve(x, y, flg_x, flg_y, bar_num):
     speed.append(z_speed)
 
     return curve_points_x,curve_points_y,o_x,o_y,speed
-
-def make_map(x, y, flg_x, flg_y, your_name):
-    n = len(x)
-    n_f = len(flg_x)
-    with open(your_name, "w") as file:
-        for i in range(0, n):
-            x[i] = round(x[i], 6)
-            y[i] = round(y[i], 6)
-            file.write(str(x[i]) + ',')
-            file.write(str(y[i]) + '\n')
-        file.write("***\n")
-        for i in range(0, n_f):
-            flg_x[i] = round(flg_x[i], 6)
-            flg_y[i] = round(flg_y[i], 6)
-            file.write(str(flg_x[i]) + ',')
-            file.write(str(flg_y[i]) + '\n')
 
 def s_y__p(x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
     # s弯
@@ -297,8 +297,8 @@ def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
     stage4_x, stage4_y = insert_point(stage3_x[-1], stage3_y[-1], stage5_x[0], stage5_y[0], 15)
     # 圆环到s弯
     stage6_x, stage6_y = insert_point(stage5_x[-1],stage5_y[-1],flg_x[len(flg_x)-bar_num],flg_y[len(flg_x)-bar_num], 30)
-    del stage1_x[18:]
-    del stage1_y[18:]
+    del stage1_x[22:]
+    del stage1_y[22:]
     # s弯
     stage7_x, stage7_y = s_bend(flg_x[1:], flag_y[1:], 16, 1)
     #s弯到终点
@@ -317,6 +317,16 @@ def p__y_s(x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
 
     return curve_x,curve_y,o_x,o_y,speed
 
+def model(x, y, flag_x, flag_y, bar_num,model):
+    if model == '坡道--圆环_s弯':
+        bx, by, ox, oy, speed = p__y_s(x, y, flag_x, flag_y, bar_num)
+    elif model == 's弯--圆环_坡道':
+        bx, by, ox, oy, speed = s__y_p(x, y, flag_x, flag_y, bar_num)
+    else:
+        bx, by, ox, oy, speed = s_y__p(x, y, flag_x, flag_y, bar_num)
+
+    return bx, by, ox, oy, speed
+
 # ----------------------------My_function-----------------------------------------------
 
 if __name__ == "__main__":
@@ -330,11 +340,14 @@ if __name__ == "__main__":
             if os.path.exists(setname + '.txt') != True:
                 g.msgbox("请确定你的路径下是否有该配置文件！！！", "gps-system")
 
+    #输入模式
+    model_choose = g.buttonbox(msg='请输入模式', title=' ', choices=['坡道--圆环_s弯', 's弯--圆环_坡道', 's弯_圆环--坡道'], )
+
     #输入锥桶个数
     bar_num = int(g.enterbox(msg='锥桶个数', title=' ', default='4', strip=True, image=None, root=None))
     # 读点
     x, y, flag_x, flag_y = read_point(setname + ".txt")
-    b_x, b_y, outx, outy, speed_control = s_y__p(x, y, flag_x, flag_y, bar_num)
+    b_x, b_y, outx, outy, speed_control = model(x, y, flag_x, flag_y, bar_num, model_choose)
     outname = None
 
     # --------------------------取点完成------------------------------
@@ -386,7 +399,7 @@ if __name__ == "__main__":
                 sys.exit(0)  # 如果退出
 
         if choice == '开始拟合':
-            b_x, b_y, outx, outy, speed_control = make_curve(x, y, flag_x, flag_y, bar_num)
+            b_x, b_y, outx, outy, speed_control = model(x, y, flag_x, flag_y, bar_num, model_choose)
             fig1, ax1 = plt.subplots()
             for i in range(len(flag_x)):
                 ax1.plot(flag_x[i], flag_y[i], 'bo')
