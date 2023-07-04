@@ -263,6 +263,7 @@ def s__y_p(x, y, flg_x, flg_y, bar_num): #先过s弯，掉头过圆环和坡道
     # del o_y[-2:]
     o_x.append(curve_points_x[-1])
     o_y.append(curve_points_y[-1])
+
     speed.append(z_speed)
 
     return curve_points_x,curve_points_y,o_x,o_y,speed
@@ -396,8 +397,8 @@ if __name__ == "__main__":
     for i in range(0,len(speed_control)-3):
         # if i < 10:
         #     speed_control[i] = z_speed
-        if speed_control[i] == s_speed and speed_control[i+1] == z_speed:
-            speed_control[i+1] = s_speed
+        # if speed_control[i] == s_speed and speed_control[i+1] == z_speed:
+        #     speed_control[i+1] = s_speed
         if speed_control[i] == z_speed:
             ax1.plot(outx[i],outy[i], 'yo')
 
