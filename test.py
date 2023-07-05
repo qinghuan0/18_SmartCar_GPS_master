@@ -8,6 +8,7 @@ from GPS_system import Point_Move
 
 z_speed = 18  # 直道速度
 s_speed = 10  # 弯道速度
+j_speed = 8  # 缓冲速度
 
 def interpolate_points(x, y ,n):
     # 计算参数化曲线的参数 t
@@ -164,33 +165,43 @@ def filter_points(x, y, threshold):
     curvature = calculate_curvature(x, y)
     filtered_x = []
     filtered_y = []
-    speed = []
     for i in range(len(x)):
         if curvature[i] >= threshold:
             if i % 4 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
-                speed.append(s_speed)
+
         else:
-            if i < len(x)-1 and curvature[i+1] >= threshold:
-                filtered_x.append(x[i-2])
-                filtered_y.append(y[i-2])
-                speed.append(s_speed)
-                filtered_x.append(x[i])
-                filtered_y.append(y[i])
-                speed.append(s_speed)
+            # if i < len(x)-1 and curvature[i+1] >= threshold:
+            #     filtered_x.append(x[i-2])
+            #     filtered_y.append(y[i-2])
+            #     filtered_x.append(x[i])
+            #     filtered_y.append(y[i])
+
             if i % 22 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
-                speed.append(z_speed)
 
-    for j in range(1,len(speed)-1):
-        if speed[j] == z_speed:
-            if speed[j-1] == speed[j+1] == s_speed:
-                speed[j] = s_speed
-            if speed[j-1] == s_speed and speed[j+1] == z_speed:
-                speed[j-1] = z_speed
-    return filtered_x, filtered_y, speed
+    return filtered_x, filtered_y
+
+def speed_planning(x, y):
+    speed = []
+    value = 1.9e-06
+    last_dis = 100
+    for i in range(len(x) - 1):
+        dis = np.sqrt((x[i+1] - x[i]) ** 2 + (y[i+1] - y[i]) ** 2)
+        # print(dis)
+        if dis <= value: #距离阈值
+            if last_dis > value:
+                speed[i - 1] = j_speed
+            speed.append(s_speed)
+        else:
+            speed.append(z_speed)
+        last_dis = dis
+
+    speed.append(z_speed)
+
+    return speed
 
 def s_y__p(x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
     # s弯
@@ -221,10 +232,10 @@ def s_y__p(x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
     y_list = stage1_y + stage2_y + stage3_y + stage4_y + stage5_y + stage6_y + stage7_y
     curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
     curve_x, curve_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
-    o_x,o_y,speed=filter_points(curve_x,curve_y,40000) #滤点
+    o_x,o_y = filter_points(curve_x,curve_y,35000) #滤点
     o_x.append(curve_x[-1])
     o_y.append(curve_y[-1])
-    speed.append(z_speed)
+    speed = speed_planning(o_x, o_y)
 
     return curve_x,curve_y,o_x,o_y,speed
 
@@ -247,5 +258,7 @@ if __name__ == "__main__":
     for i in range(0,len(speed_control)):
         if speed_control[i] == z_speed:
             ax1.plot(outx[i],outy[i], 'yo')
+        if speed_control[i] == j_speed:
+            ax1.plot(outx[i], outy[i], 'co')
 
     plt.show()
