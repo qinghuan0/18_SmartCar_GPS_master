@@ -1,10 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from GPS_system import read_point
+from fusion import read_point
 from scipy import interpolate
-from GPS_system import make_code
 from scipy.special import comb
-from GPS_system import Point_Move
 
 z_speed = 18  # 直道速度
 s_speed = 10  # 弯道速度

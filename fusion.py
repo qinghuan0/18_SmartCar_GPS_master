@@ -1,31 +1,19 @@
 # -------------------------------
-# GPS_system
+# fusion.py
 # author:恩
-# version:2.1
+# version:4.2
 # -------------------------------
 
-
-# ------------------导入库--------------------
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-from matplotlib.artist import Artist
-from matplotlib.patches import Polygon
 from scipy import interpolate
 import numpy as np
-import math
-import easygui as g
-import sys
-import os
-
-#-----------------宏定义----------------
-stage1 = 100  #阶段一
-stage2 = 400
-stage3 = 410
-stage4 = 700
+from scipy.special import comb
+z_speed = 18  # 直道速度
+s_speed = 10  # 弯道速度
+j_speed = 8  # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
-
-# ---------------读取函数----------------------
 def read_point(file_name):
     # 数据存放
     data = []
@@ -98,77 +86,21 @@ def make_code(x, y, speed ,your_name):
         file.write("\n};\n")
         file.write("\n#endif /* CODE_GPS_POINT_H_ */\n")
 
-# --------------------拟合曲线函数----------------------------
-def make_curve(control_points_x, control_points_y):
-
-    # list转numpy
-    use_x = np.array(control_points_x)
-    use_y = np.array(control_points_y)
-
-    # 去掉重复的点
-    okay = np.where(np.abs(np.diff(use_x)) + np.abs(np.diff(use_y)) > 0)
-    use_xx = np.r_[use_x[okay],use_x[-1]]
-    use_yy = np.r_[use_y[okay],use_y[-1]]
-
-    tck, u = interpolate.splprep([use_xx, use_yy], s=0)
-    # evaluate the spline fits for 1000 evenly spaced distance values
-    curve_points_x, curve_points_y = interpolate.splev(np.linspace(0, 1, 1000), tck)
-
-    # n = len(control_points_x) - 1
-    # t = np.linspace(0, 1, 1000)
-    # curve_points_x = np.zeros(1000)
-    # curve_points_y = np.zeros(1000)
-    o_x = []
-    o_y = []
-    o_x.append(x[0])
-    o_y.append(y[0])
-
-    speed = [] #速度数组
-    z_speed = 12 #直道速度
-    s_speed = 6 #s弯速度
-    y_speed = 6 #圆环速度
-    speed.append(z_speed)
-
-    for i in range(1000):
-        ii = i + 1
-
-        #贝塞尔曲线拟合
-        # point_x = 0.0
-        # point_y = 0.0
-        # for j in range(n + 1):
-        #     coefficient = np.math.comb(n, j) * t[i] ** j * (1 - t[i]) ** (n - j)
-        #     point_x += coefficient * control_points_x[j]
-        #     point_y += coefficient * control_points_y[j]
-        # curve_points_x[i] = point_x
-        # curve_points_y[i] = point_y
-
-        if ii <= stage1:  # 直道
-            if ii % 180 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-        if ii > stage1 and ii <= stage2:  # s弯
-            if (ii - 180) % 16 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(s_speed)
-        if ii > stage2 and ii <= stage3:  # 直道
-            if (ii - 510) % 50 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-        if ii > stage3 and ii <= stage4:  # 大圆环
-            if (ii - 690) % 16 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(y_speed)
-        if ii > stage4 and ii <= 1000:  # 直道
-            if (ii - 690) % 300 == 0:
-                o_x.append(curve_points_x[i])
-                o_y.append(curve_points_y[i])
-                speed.append(z_speed)
-
-    return curve_points_x, curve_points_y, o_x, o_y, speed
+def make_map(x, y, flg_x, flg_y, your_name):
+    n = len(x)
+    n_f = len(flg_x)
+    with open(your_name, "w") as file:
+        for i in range(0, n):
+            x[i] = round(x[i], 6)
+            y[i] = round(y[i], 6)
+            file.write(str(x[i]) + ',')
+            file.write(str(y[i]) + '\n')
+        file.write("***\n")
+        for i in range(0, n_f):
+            flg_x[i] = round(flg_x[i], 6)
+            flg_y[i] = round(flg_y[i], 6)
+            file.write(str(flg_x[i]) + ',')
+            file.write(str(flg_y[i]) + '\n')
 
 # ----------------动态图的类------------------------
 class Point_Move:
@@ -290,88 +222,197 @@ class Point_Move:
         self.ax.draw_artist(self.line)
         self.canvas.blit(self.ax.bbox)
 
-# ----------------------------My_function-----------------------------------------------
+def interpolate_points(x, y ,n):
+    # 计算参数化曲线的参数 t
+    t = np.linspace(0, 1, len(x))
+
+    # 创建插值函数
+    tck, u = interpolate.splprep([x, y], s=0)
+
+    # 在曲线上均匀取样n个点
+    t_new = np.linspace(0, 1, (len(x)-1)*n+1)
+    interpolated_points = interpolate.splev(t_new, tck)
+
+    # 提取插值点的 x 和 y 坐标数组
+    interpolated_x = interpolated_points[0]
+    interpolated_y = interpolated_points[1]
+
+    return interpolated_x, interpolated_y
 
 
-if __name__ == "__main__":
+def s_bend(x_list, y_list, amp, num):
+    def draw_curve(x1, y1, x2, y2, amplitude, dir, start_flg, end_flg):
+        # 计算两点之间的距离和角度
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = np.sqrt(dx ** 2 + dy ** 2) * 2
+        angle = np.arctan2(dy, dx)
 
-    # ---------------欢迎界面----------------
-    # g.msgbox("-----------------------------越野组gps调试系统----------------------------\n"
-    #          "-------------------------------version:2.1---------------------------------",
-    #          'gps-system',
-    #          '启动', 'en_logo.jpg')
+        # 坐标轴变换
+        def transform_x(x, y):
+            return x * np.cos(angle) - y * np.sin(angle)
 
-    # ------------打开启动文件--------------------
-    setname = ''
-    while (os.path.exists(setname + '.txt') != True):
-        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'rec_1')
-        if setname == None:
-            setname = ''
-        else:
-            if os.path.exists(setname + '.txt') != True:
-                g.msgbox("请确定你的路径下是否有该配置文件！！！", "gps-system")
+        def transform_y(x, y):
+            return x * np.sin(angle) + y * np.cos(angle)
 
-    # 读点
-    x, y, flag_x, flag_y = read_point(setname + ".txt")
-
-    xi, yi, outx, outy, speed_control = make_curve(x, y)
-    outname = None
-
-    # --------------------------取点完成------------------------------
-
-    # 这里复制一份留着复位使用
-    routx = x.copy()
-    routy = y.copy()
-
-    # 调用可调plot类
-    mygps = Point_Move(x,y,flag_x,flag_y)
-    while True:
-        msg = "请选择你的操作"
-        title = "gps-system"
-        choices = ["调整轨迹", "轨迹复位", "开始拟合","输出代码", "退出系统"]
-        choice = g.choicebox(msg, title, choices)
-
-        if choice == '调整轨迹':
-            mygps.__init__(x, y, flag_x, flag_y)
-
-        if choice == '轨迹复位':
-            x = routx
-            y = routy
-            routx = x.copy()
-            routy = y.copy()
-            mygps.__init__(x, y, flag_x, flag_y)
-
-        if choice == '输出代码':
-            outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
-            if outname != None:
-                make_code(outx, outy, speed_control,outname + '.txt')
-                g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
-
-        if choice == '退出系统':
-            msg = "退出系统吗？"
-            title = "gps-system"
-
-            # 弹出一个Continue/Cancel对话框
-            if g.ccbox(msg, title, ('继续操作', '退出')):
-                pass  # 如果继续操作
+        if dir == 0:
+            # 生成 x 坐标点，取周期的前半部分
+            if start_flg == 1:
+                x = np.linspace(-distance / 4, distance / 2, num)
+            elif end_flg == 1:
+                x = np.linspace(0, distance * 3 / 4, num)
             else:
-                sys.exit(0)  # 如果退出
+                x = np.linspace(0, distance / 2, num)
 
-        if choice == '开始拟合':
-            xi, yi, outx, outy, speed_control = make_curve(x, y)
+            # 计算对应的 y 坐标点，使用正弦函数，并根据振幅进行调整
+            y = amplitude * np.sin((2 * np.pi / distance) * x)
+            new_x = transform_x(x, y) + x1
+            new_y = transform_y(x, y) + y1
 
-            fig1, ax1 = plt.subplots()
-            for i in range(len(outx)):
-                ax1.plot(outx[i], outy[i], 'or')
-                if i < len(outx):
-                    ax1.text(outx[i] + 0.000005, outy[i] + 0.000005, str(i), weight="bold", color="k", fontsize=7)
+        else:
+            # 生成 x 坐标点，取周期的后半部分
+            if start_flg == 1:
+                x = np.linspace(-distance / 4, distance / 2, num)
+            elif end_flg == 1:
+                x = np.linspace(0, distance * 3 / 4, num)
+            else:
+                x = np.linspace(0, distance / 2, num)
 
-            ax1.plot(xi, yi, '-y')
-            ax1.plot(outx, outy, '--r')
-            ax1.plot(flag_x, flag_y, 'bo')
-            ax1.text(xi[stage1] + 0.000005 ,yi[stage1] + 0.000005,'stage1',weight="bold",color="r",fontsize=7)
-            ax1.text(xi[stage2] + 0.000005, yi[stage2] + 0.000005, 'stage2', weight="bold", color="r", fontsize=7)
-            ax1.text(xi[stage3] + 0.000005, yi[stage3] + 0.000005, 'stage3', weight="bold", color="r", fontsize=7)
-            ax1.text(xi[stage4] + 0.000005, yi[stage4] + 0.000005, 'stage4', weight="bold", color="r", fontsize=7)
-            plt.show()
+            # 计算对应的 y 坐标点，使用正弦函数，并根据振幅进行调整
+            y = - amplitude * np.sin((2 * np.pi / distance) * x)
 
+            # 坐标轴变换
+            new_x = transform_x(x, y) + x1
+            new_y = transform_y(x, y) + y1
+            new_x = np.array(new_x)
+            new_y = np.array(new_y)
+
+        return new_x, new_y
+
+    last_x = 0
+    last_y = 0
+
+    # 遍历相邻的坐标点，绘制余弦曲线和坐标点
+    for i in range(len(x_list) - 2):
+        if i % 2 == 0:
+            dir = 0
+        else:
+            dir = 1
+        if i == 0:
+            start_flg = 1
+        else:
+            start_flg = 0
+        if i == len(x_list) - 3:
+            end_flg = 1
+        else:
+            end_flg = 0
+        x_1 = (x_list[i] + x_list[i + 1]) / 2
+        y_1 = (y_list[i] + y_list[i + 1]) / 2
+        x_2 = (x_list[i + 1] + x_list[i + 2]) / 2
+        y_2 = (y_list[i + 1] + y_list[i + 2]) / 2
+
+        # 绘制曲线
+        out_x, out_y = draw_curve(x_1, y_1, x_2, y_2, amp, dir, start_flg, end_flg)
+        xx = np.hstack((last_x, out_x))
+        yy = np.hstack((last_y, out_y))
+
+        last_x = out_x
+        last_y = out_y
+
+    xx = xx.tolist()
+    yy = yy.tolist()
+
+    return xx, yy
+
+def ring(x, y, radius, angle_1, angle_2, num):
+    arc_points_x = []
+    arc_points_y = []
+    angles = np.linspace(angle_1, angle_2, num)
+    circle_points_x = x + radius * np.cos(angles)
+    circle_points_y = y + radius * np.sin(angles)
+    arc_points_x.extend(circle_points_x)
+    arc_points_y.extend(circle_points_y)
+
+    return arc_points_x,arc_points_y
+
+def bezier_curve_interpolation(x, y,num):
+    n = len(x) - 1  # 控制点数量
+    t = np.linspace(0, 1, num)  # 参数化曲线的参数
+
+    curve_x = np.zeros(num)
+    curve_y = np.zeros(num)
+
+    for i, t_val in enumerate(t):
+        point = np.zeros(2)
+        for j in range(n + 1):
+            coefficient = comb(n, j) * t_val**j * (1 - t_val)**(n - j)
+            point += coefficient * np.array([x[j], y[j]])
+        curve_x[i] = point[0]
+        curve_y[i] = point[1]
+
+    return curve_x, curve_y
+
+def insert_point(x1, y1, x2, y2, num):
+    dx = (x2 - x1 ) / (num + 1)
+    dy = (y2 - y1 ) / (num + 1)
+    xx = np.linspace(x1 + dx, x2 - dx, num)
+    yy = np.linspace(y1 + dy, y2 - dy, num)
+    xx = xx.tolist()
+    yy = yy.tolist()
+
+    return xx,yy
+
+def calculate_curvature(x, y):
+    # 计算曲线上各点的曲率
+    dx_dt = np.gradient(x)
+    dy_dt = np.gradient(y)
+    d2x_dt2 = np.gradient(dx_dt)
+    d2y_dt2 = np.gradient(dy_dt)
+
+    curvature = np.abs(d2x_dt2 * dy_dt - dx_dt * d2y_dt2) / (dx_dt ** 2 + dy_dt ** 2) ** 1.5
+    return curvature
+
+def filter_points(x, y, threshold):
+    # 根据曲率筛选点
+    curvature = calculate_curvature(x, y)
+    filtered_x = []
+    filtered_y = []
+    for i in range(len(x)):
+        if curvature[i] >= threshold:
+            if i % 4 == 0:
+                filtered_x.append(x[i])
+                filtered_y.append(y[i])
+
+        else:
+            # if i < len(x)-1 and curvature[i+1] >= threshold:
+            #     filtered_x.append(x[i-2])
+            #     filtered_y.append(y[i-2])
+            #     filtered_x.append(x[i])
+            #     filtered_y.append(y[i])
+
+            if i % 22 == 0:
+                filtered_x.append(x[i])
+                filtered_y.append(y[i])
+
+    return filtered_x, filtered_y
+
+def speed_planning(x, y):
+    speed = []
+    value = 1.9e-06
+    last_dis = 100
+    for i in range(len(x) - 1):
+        dis = np.sqrt((x[i+1] - x[i]) ** 2 + (y[i+1] - y[i]) ** 2)
+        # print(dis)
+        if dis <= value: #距离阈值
+            if last_dis > value:
+                speed[i - 1] = j_speed #速度缓冲
+            speed.append(s_speed)
+        else:
+            speed.append(z_speed)
+        last_dis = dis
+
+    speed.append(z_speed)
+
+    return speed
+
+# ----------------------------My_function-----------------------------------------------
