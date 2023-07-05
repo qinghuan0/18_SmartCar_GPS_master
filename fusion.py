@@ -9,6 +9,7 @@ from matplotlib.lines import Line2D
 from scipy import interpolate
 import numpy as np
 from scipy.special import comb
+
 z_speed = 18  # 直道速度
 s_speed = 10  # 弯道速度
 j_speed = 8  # 缓冲速度

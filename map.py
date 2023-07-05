@@ -3,8 +3,7 @@
 # author:恩
 # version:4.2
 # -------------------------------
-
-import numpy as np
+from fusion import *
 
 class Map:
     def out(self, x, y, flag_x, flag_y, bar_num, model):
@@ -18,13 +17,6 @@ class Map:
         return bx, by, ox, oy, speed
 
     def s__y_p(self, x, y, flg_x, flg_y, bar_num): #先过s弯，掉头过圆环和坡道
-        from fusion import s_bend
-        from fusion import ring
-        from fusion import bezier_curve_interpolation
-        from fusion import insert_point
-        from fusion import interpolate_points
-        from fusion import filter_points
-        from fusion import speed_planning
         # s弯
         stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100)
         # 起点到第一个锥桶
@@ -71,13 +63,6 @@ class Map:
         return curve_points_x,curve_points_y,o_x,o_y,speed
 
     def s_y__p(self, x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
-        from fusion import s_bend
-        from fusion import ring
-        from fusion import bezier_curve_interpolation
-        from fusion import insert_point
-        from fusion import interpolate_points
-        from fusion import filter_points
-        from fusion import speed_planning
         # s弯
         stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100)
         # 起点到第一个锥桶
@@ -114,13 +99,6 @@ class Map:
         return curve_x,curve_y,o_x,o_y,speed
 
     def p__y_s(self, x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
-        from fusion import s_bend
-        from fusion import ring
-        from fusion import bezier_curve_interpolation
-        from fusion import insert_point
-        from fusion import interpolate_points
-        from fusion import filter_points
-        from fusion import speed_planning
         # 起点到坡道
         stage1_x, stage1_y = insert_point(x[0],y[0],2* x[1]-((x[1]+x[2])/2), 2* y[1]-((y[1]+y[2])/2), 15)
         #坡道

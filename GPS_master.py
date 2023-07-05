@@ -5,14 +5,13 @@
 # -------------------------------
 
 import easygui as g
-import matplotlib.pyplot as plt
 import sys
 import os
 from map import Map
-from fusion import read_point,make_map,make_code,Point_Move,z_speed,s_speed,j_speed
+from fusion import *
 
 if __name__ == "__main__":
-    # ------------打开启动文件--------------------
+    # ------------输入地图--------------------
     setname = ''
     while (os.path.exists(setname + '.txt') != True):
         setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'p__y_s_right')
@@ -33,7 +32,7 @@ if __name__ == "__main__":
     outname = None
 
     # --------------------------取点完成------------------------------
-    # 这里复制一份留着复位使用
+    # 复制一份留着复位使用
     routx = flag_x.copy()
     routy = flag_y.copy()
 
