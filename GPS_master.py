@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # ------------输入地图--------------------
     setname = ''
     while (os.path.exists(setname + '.txt') != True):
-        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 's-y--p-right')
+        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 's-y--p-left')
         if setname == None:
             setname = ''
         else:
