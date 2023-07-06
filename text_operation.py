@@ -315,6 +315,6 @@ def point_sent(COM,file_name):
         flg = 0
 
 if __name__ == "__main__":
-    # point_receive()
-    point_sent('com15','bt_out1.txt')
+    point_receive()
+    # point_sent('com15','bt_out1.txt')
 
