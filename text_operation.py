@@ -5,7 +5,7 @@ import easygui as g
 import numpy as np
 from time import sleep
 
-def gps_receive():
+def gps_receive(ser):
     A_flag = 0
     int_value = 0
     w = 0
@@ -268,11 +268,11 @@ def bt_read(file_name):
 
     return x, y, z
 
-def point_receive():
+def point_receive(COM):
     # 修改端口号和波特率
-    ser = serial.Serial('COM15', 115200, timeout=0)
+    ser = serial.Serial(COM, 115200, timeout=0)
 
-    lo, la, flag_lo, flag_la= gps_receive()
+    lo, la, flag_lo, flag_la= gps_receive(ser)
 
     outname = g.enterbox("请输入生成文件名：", 'gps-system', 'rec_1')
     if outname != None:
@@ -315,6 +315,6 @@ def point_sent(COM,file_name):
         flg = 0
 
 if __name__ == "__main__":
-    point_receive()
+    point_receive('com15')
     # point_sent('com15','bt_out1.txt')
 
