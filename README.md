@@ -5,10 +5,10 @@
 
 * 一键生成轨迹
 * 速度规划
-* 点位调整
+* 蓝牙发送
 
 ## 使用方法
-1.首先运行point_write.py文件，将GPS原始点位保存至.txt文件中
+1.首先运行text_operation.py文件，将GPS原始点位保存至.txt文件中
 
 2.运行GPS_master.py文件，输入存储GPS原始点位的文件名称
 
@@ -93,3 +93,88 @@
 
     }
 
+### 蓝牙解算
+
+    void uart_rx_interrupt_handle(void)  //蓝牙接收
+    {
+        double lo_rec[500]; //蓝牙接收的数据
+        double la_rec[500];
+        int speed_rec[500];
+        int flg_num = 0; // 串口数据接收标志
+        uint8 dat_rec ;
+        int rec_num = 0;
+        double data_double = 0;
+        int data_int = 0;
+        float lo_width = 100;
+        float la_width = 10;
+        int speed_width = 10;
+        
+        int lo_long = 9;
+        int la_long = 8;
+        int sdat_long = 2;
+        int pass_flg = 0;
+    
+        dat_rec = uart_read_byte(UART_2);
+    
+        if (dat_rec == '*')
+        {
+            flg_num++;
+            rec_num = 0;
+            data_double = 0;
+            data_int = 0;
+            lo_width = 100;
+             la_width = 10;
+             speed_width = 10;
+             lo_long = 9;
+             la_long = 8;
+             sdat_long = 2;
+             pass_flg = 1;
+        }
+        else if (dat_rec == ',')
+        {
+            if (flg_num == 1)
+            {
+                lo_rec[rec_num] = data_double;
+                data_double = 0;
+            }
+            else if (flg_num == 2)
+            {
+                la_rec[rec_num] = data_double;
+                data_double = 0;
+            }
+            else if (flg_num == 3)
+            {
+                speed_rec[rec_num] = data_int;
+                data_int = 0;
+            }
+            lo_width = 100;
+            la_width = 10;
+            speed_width = 10;
+            lo_long = 9;
+            la_long = 8;
+            sdat_long = 2;
+            rec_num++;
+        }
+    
+        if(dat_rec >= '0' && dat_rec <= '9')pass_flg = 0;
+        else pass_flg = 1;
+    
+        if (flg_num == 1 && pass_flg == 0 && lo_long > 0)
+        {
+            data_double += ((int)dat_rec-'0') * lo_width;
+            lo_width /= 10;
+            lo_long--;
+        }
+        if (flg_num == 2 && pass_flg == 0 && la_long>0)
+        {
+            data_double += ((int)dat_rec-'0') * la_width;
+            la_width /= 10;
+            la_long--;
+        }
+        if (flg_num == 3 && pass_flg == 0 && sdat_long>0)
+        {
+            data_int += ((int)dat_rec-'0') * speed_width;
+            speed_width /= 10;
+            sdat_long--;
+        }
+    }
