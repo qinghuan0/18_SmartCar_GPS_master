@@ -1,6 +1,8 @@
 # 18_SmartCar_GPS_master
 18届单车越野GPS上位机
 
+![image](https://github.com/qinghuan0/18_SmartCar_GPS_master/blob/main/example.jpg?raw=true)
+
 ## 功能描述
 
 * 一键规划路径
