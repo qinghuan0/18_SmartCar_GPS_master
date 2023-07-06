@@ -4,11 +4,11 @@
 # version:4.2
 # -------------------------------
 
-import easygui as g
 import sys
 import os
 from map import Map
 from fusion import *
+from text_operation import *
 
 if __name__ == "__main__":
     # ------------输入地图--------------------
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     while True:
         msg = "请选择你的操作"
         title = "gps-system"
-        choices = ["修改点位","点位复位","开始拟合","输出代码", "输出地图", "退出系统"]
+        choices = ["修改点位","点位复位","开始拟合","输出代码", "输出地图", "蓝牙发送","退出系统"]
         choice = g.choicebox(msg, title, choices)
 
         if choice == '修改点位':
@@ -110,3 +110,10 @@ if __name__ == "__main__":
                     ax1.plot(outx[i], outy[i], 'co')
             plt.show()
 
+        if choice == '蓝牙发送':
+            outname = g.enterbox("请输入生成文件名：", 'gps-system', 'bt_out1')
+            if outname != None:
+                bluetooth_out(outx, outy, speed_control,outname + '.txt')
+            point_sent('com15', outname + '.txt')
+            g.msgbox('发送完毕！')
+            break

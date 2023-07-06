@@ -10,99 +10,11 @@ from scipy import interpolate
 import numpy as np
 from scipy.special import comb
 
-z_speed = 18  # 直道速度
-s_speed = 10  # 弯道速度
-j_speed = 8  # 缓冲速度
+z_speed = 20  # 直道速度
+s_speed = 12  # 弯道速度
+j_speed = 10  # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
-def read_point(file_name):
-    # 数据存放
-    data = []
-    flag = 0
-
-    with open(file_name, "r") as f:
-        for line in f.readlines():
-            line = line.strip('\n')
-            line = line.strip()
-            data.append(line)
-
-    # 读出经纬度数据
-    x = []
-    y = []
-    #标志点
-    flg_x = []
-    flg_y = []
-
-    for dd in data:
-        if dd == '***':
-            flag = 1
-            continue
-        dt = dd.split(',')
-        if flag == 0:
-            x.append(float(dt[0]))
-            y.append(float(dt[1]))
-
-        else:
-            flg_x.append(float(dt[0]))
-            flg_y.append(float(dt[1]))
-
-    return x, y, flg_x, flg_y
-
-# ---------------生成程序函数-------------------------
-def make_code(x, y, speed ,your_name):
-    # -----------save---txt--------------
-    n = len(x)
-    with open(your_name, "w") as file:
-        file.truncate()  # 清空文本
-        file.write("/*\n"
-"* GPS_Point.h\n"
-"*\n"
-"*  Created on: 2023年6月10日\n"
-"*      Author: 恩\n"
-"*/\n"
-"\n"
-"\n"
-"#ifndef CODE_GPS_POINT_H_\n"
-"#define CODE_GPS_POINT_H_\n"
-"\n"
-"double lo_bezier[] = {\n")
-        for i in range(0, n):
-            x[i] = round(x[i],6)
-            file.write(str(x[i]) + ',')
-            if i % 8 == 0 and i != 0:
-                file.write("\n")
-        file.write("\n};\n"
-                   "double la_bezier[] = {\n")
-        for i in range(0, n):
-            y[i] = round(y[i], 6)
-            file.write(str(y[i]) + ',')
-            if i % 8 == 0 and i != 0:
-                file.write("\n")
-        file.write("\n};\n"
-                   "int Speed[] = {\n")
-        for i in range(0, n):
-            file.write(str(speed[i]) + ',')
-            if i % 8 == 0 and i != 0:
-                file.write("\n")
-        file.write("\n};\n")
-        file.write("\n#endif /* CODE_GPS_POINT_H_ */\n")
-
-def make_map(x, y, flg_x, flg_y, your_name):
-    n = len(x)
-    n_f = len(flg_x)
-    with open(your_name, "w") as file:
-        for i in range(0, n):
-            x[i] = round(x[i], 6)
-            y[i] = round(y[i], 6)
-            file.write(str(x[i]) + ',')
-            file.write(str(y[i]) + '\n')
-        file.write("***\n")
-        for i in range(0, n_f):
-            flg_x[i] = round(flg_x[i], 6)
-            flg_y[i] = round(flg_y[i], 6)
-            file.write(str(flg_x[i]) + ',')
-            file.write(str(flg_y[i]) + '\n')
-
 # ----------------动态图的类------------------------
 class Point_Move:
     showverts = True
