@@ -55,8 +55,9 @@ class Map:
         o_x,o_y = filter_points(curve_x,curve_y,35000) #滤点
         # del o_x[-2:]
         # del o_y[-2:]
-        o_x.append(curve_points_x[-1])
-        o_y.append(curve_points_y[-1])
+        for i in range(5):
+            o_x.append(curve_x[-1])
+            o_y.append(curve_y[-1])
 
         speed = speed_planning(o_x, o_y)
 
@@ -92,8 +93,9 @@ class Map:
         curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
         curve_x, curve_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
         o_x,o_y = filter_points(curve_x,curve_y,35000) #滤点
-        o_x.append(curve_x[-1])
-        o_y.append(curve_y[-1])
+        for i in range(5):
+            o_x.append(curve_x[-1])
+            o_y.append(curve_y[-1])
         speed = speed_planning(o_x, o_y)
 
         return curve_x,curve_y,o_x,o_y,speed
@@ -131,8 +133,9 @@ class Map:
         curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
         curve_x, curve_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
         o_x,o_y = filter_points(curve_x,curve_y,35000) #滤点
-        o_x.append(curve_x[-1])
-        o_y.append(curve_y[-1])
+        for i in range(5):
+            o_x.append(curve_x[-1])
+            o_y.append(curve_y[-1])
         speed = speed_planning(o_x, o_y)
 
         return curve_x,curve_y,o_x,o_y,speed
