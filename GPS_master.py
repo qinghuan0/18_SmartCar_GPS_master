@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # ------------输入地图--------------------
     setname = ''
     while (os.path.exists(setname + '.txt') != True):
-        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'p__y_s_right')
+        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 's-y--p-right')
         if setname == None:
             setname = ''
         else:
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     ax1.plot(outx, outy, 'ro-')
     ax1.plot(b_x, b_y, 'y-')
-    ax1.plot(x[1:3], y[1:3], 'b-')
+    # ax1.plot(x[1:3], y[1:3], 'b-')
     for i in range(0,len(speed_control)):
         if speed_control[i] == z_speed:
             ax1.plot(outx[i],outy[i], 'yo')
