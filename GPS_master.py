@@ -6,6 +6,9 @@
 
 import sys
 import os
+
+import matplotlib.pyplot as plt
+
 from map import Map
 from fusion import *
 from text_operation import *
@@ -14,7 +17,7 @@ if __name__ == "__main__":
     # ------------输入地图--------------------
     setname = ''
     while (os.path.exists(setname + '.txt') != True):
-        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 's-y--p-left')
+        setname = g.enterbox("请输入采取的gps文件：", 'gps-system', 'rec_1')
         if setname == None:
             setname = ''
         else:
@@ -51,7 +54,12 @@ if __name__ == "__main__":
         if speed_control[i] == j_speed:
             ax1.plot(outx[i], outy[i], 'co')
 
+    plt.xlim(min(outx) - 0.00002, max(outx) + 0.00002)
+    plt.ylim(min(outy) - 0.00002, max(outy) + 0.00002)
+
     plt.show()
+    myplot_NEU(outx, outy, b_x, b_y)
+
     while True:
         msg = "请选择你的操作"
         title = "gps-system"
@@ -108,6 +116,10 @@ if __name__ == "__main__":
                     ax1.plot(outx[i], outy[i], 'yo')
                 if speed_control[i] == j_speed:
                     ax1.plot(outx[i], outy[i], 'co')
+
+            plt.xlim(min(outx) - 0.00002, max(outx) + 0.00002)
+            plt.ylim(min(outy) - 0.00002, max(outy) + 0.00002)
+
             plt.show()
 
         if choice == '蓝牙发送':

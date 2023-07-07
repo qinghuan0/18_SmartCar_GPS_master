@@ -277,13 +277,13 @@ def bt_read(file_name):
 def point_receive(COM):
     # 修改端口号和波特率
     ser = serial.Serial(COM, 115200, timeout=0)
-
+    sleep(0.1)
     lo, la, flag_lo, flag_la= gps_receive(ser)
 
     outname = g.enterbox("请输入生成文件名：", 'gps-system', 'rec_1')
     if outname != None:
         txt_out(lo, la, flag_lo, flag_la, outname + '.txt')
-        g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
+        # g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
 
 def point_sent(COM,file_name):
     ser = serial.Serial(COM, 115200, timeout=0)

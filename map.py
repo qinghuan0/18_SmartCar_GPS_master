@@ -64,11 +64,17 @@ class Map:
         return curve_points_x,curve_points_y,o_x,o_y,speed
 
     def s_y__p(self, x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
+        if bar_num %2 == 0:
+            turn = 0
+        else:
+            turn = 1
         # s弯
         if (x[0] > x[1] and y[-1] < y[0]) or (x[0] < x[1] and y[-1] > y[0]):
-            stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100, 1)
+            stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100, abs(turn - 1))
         else:
-            stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100)
+            stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100, turn)
+        del stage2_x[0]
+        del stage2_y[0]
         # 起点到第一个锥桶
         stage1_x, stage1_y = insert_point(x[0],y[0],stage2_x[0],stage2_y[0], 30)
         del stage1_x[18:]

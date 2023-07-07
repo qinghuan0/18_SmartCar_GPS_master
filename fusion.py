@@ -9,9 +9,10 @@ from matplotlib.lines import Line2D
 from scipy import interpolate
 import numpy as np
 from scipy.special import comb
+import math
 
-z_speed = 20 -4 # 直道速度
-s_speed = 14 -4 # 弯道速度
+z_speed = 18 -4 # 直道速度
+s_speed = 12 -4 # 弯道速度
 j_speed = 10 -4  # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
@@ -153,20 +154,20 @@ def interpolate_points(x, y ,n):
     return interpolated_x, interpolated_y
 
 
-def s_bend(x_list, y_list, amp, num, turn = 0):
+def s_bend(x_list, y_list, amp, num, turn=0):
     def draw_curve(x1, y1, x2, y2, amplitude, dir, start_flg, end_flg):
-        # 计算两点之间的距离和角度
-        dx = x2 - x1
-        dy = y2 - y1
-        distance = np.sqrt(dx ** 2 + dy ** 2) * 2
-        angle = np.arctan2(dy, dx)
-
         # 坐标轴变换
         def transform_x(x, y):
             return x * np.cos(angle) - y * np.sin(angle)
 
         def transform_y(x, y):
             return x * np.sin(angle) + y * np.cos(angle)
+
+        # 计算两点之间的距离和角度
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = np.sqrt(dx ** 2 + dy ** 2) * 2
+        angle = np.arctan2(dy, dx)
 
         if dir == 0:
             # 生成 x 坐标点，取周期的前半部分
@@ -192,18 +193,16 @@ def s_bend(x_list, y_list, amp, num, turn = 0):
                 x = np.linspace(0, distance / 2, num)
 
             # 计算对应的 y 坐标点，使用正弦函数，并根据振幅进行调整
-            y = - amplitude * np.sin((2 * np.pi / distance) * x)
+            y = -amplitude * np.sin((2 * np.pi / distance) * x)
 
             # 坐标轴变换
             new_x = transform_x(x, y) + x1
             new_y = transform_y(x, y) + y1
-            new_x = np.array(new_x)
-            new_y = np.array(new_y)
 
         return new_x, new_y
 
-    last_x = 0
-    last_y = 0
+    xx = []
+    yy = []
 
     # 遍历相邻的坐标点，绘制余弦曲线和坐标点
     for i in range(len(x_list) - 2):
@@ -232,16 +231,14 @@ def s_bend(x_list, y_list, amp, num, turn = 0):
 
         # 绘制曲线
         out_x, out_y = draw_curve(x_1, y_1, x_2, y_2, amp, dir, start_flg, end_flg)
-        xx = np.hstack((last_x, out_x))
-        yy = np.hstack((last_y, out_y))
-
-        last_x = out_x
-        last_y = out_y
+        xx = np.append(xx, out_x)
+        yy = np.append(yy, out_y)
 
     xx = xx.tolist()
     yy = yy.tolist()
 
     return xx, yy
+
 
 def ring(x, y, radius, angle_1, angle_2, num):
     arc_points_x = []
@@ -334,4 +331,67 @@ def speed_planning(x, y):
 
     return speed
 
+
+# ---------------经纬度转平面坐标系（LLA--->NEU）------------------------
+def gps_LLAtoNEU(a, b, sa, sb):
+    longitude = a
+    latitude = b
+    start_longitude = sa
+    start_latitude = sb
+    c = []
+    d = []
+    n = len(a)
+    earth = 6378137  # 地球半径，单位：m
+    pi = 3.1415926535898
+    for i in range(n):
+        now_longitude = longitude[i]
+        now_latitude = latitude[i]
+        rad_latitude1 = start_latitude * pi / 180
+        rad_latitude2 = now_latitude * pi / 180
+        rad_longitude1 = start_longitude * pi / 180
+        rad_longitude2 = now_longitude * pi / 180
+        aaa = rad_latitude1 - rad_latitude2
+        bbb = rad_longitude1 - rad_longitude2
+        distance = 2 * math.asin(math.sqrt(pow(math.sin(aaa / 2), 2) + math.cos(rad_latitude1)
+                                           * math.cos(rad_latitude2) * pow(math.sin(bbb / 2), 2)))
+        distance = distance * earth
+        ccc = math.sin(rad_longitude2 - rad_longitude1) * math.cos(rad_latitude2)
+        ddd = math.cos(rad_latitude1) * math.sin(rad_latitude2) - math.sin(rad_latitude1) \
+              * math.cos(rad_latitude2) * math.cos(rad_longitude2 - rad_longitude1)
+        angle = math.atan2(ccc, ddd) * 180 / pi
+        if angle < 0:
+            angle = angle + 360
+        angle2 = (450 - angle) * pi / 180
+        px = distance * math.cos(angle2)
+        py = distance * math.sin(angle2)
+        c.append(px)
+        d.append(py)
+
+    return c, d
+
+
+# 按NEU坐标系显示
+def myplot_NEU(outx, outy, xi, yi):
+    neux, neuy = gps_LLAtoNEU(outx, outy, outx[0], outy[0])
+    neuxi, neuyi = gps_LLAtoNEU(xi, yi, outx[0], outy[0])
+
+    fig2, ax2 = plt.subplots()
+    for i in range(len(neux)):
+        ii = i + 1
+        ax2.plot(neux[i], neuy[i], 'or')
+        if i < len(neux):
+            ax2.text(neux[i] + 0.00001, neuy[i] + 0.00001, str(i), weight="bold", color="k", fontsize=7)
+
+    ax2.plot(neuxi, neuyi, '-y')
+    ax2.plot(neux, neuy, '--r')
+    plt.show()
+
 # ----------------------------My_function-----------------------------------------------
+
+if __name__ == '__main__':
+    flg_x = [110.29789, 110.29792, 110.297951, 110.297974]
+    flg_y = [21.153831, 21.15382, 21.153809, 21.153797]
+    bar_num = 3
+    ox, oy = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100)
+    plt.plot(ox, oy, 'y-')
+    plt.show()
