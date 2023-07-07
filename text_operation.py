@@ -1,3 +1,9 @@
+# -------------------------------
+# text_operation.py
+# author:恩
+# version:4.2
+# -------------------------------
+
 import serial
 import struct
 import keyboard

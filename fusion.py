@@ -10,9 +10,9 @@ from scipy import interpolate
 import numpy as np
 from scipy.special import comb
 
-z_speed = 20  # 直道速度
-s_speed = 12  # 弯道速度
-j_speed = 10  # 缓冲速度
+z_speed = 20 -4 # 直道速度
+s_speed = 14 -4 # 弯道速度
+j_speed = 10 -4  # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
 # ----------------动态图的类------------------------
