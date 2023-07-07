@@ -153,7 +153,7 @@ def interpolate_points(x, y ,n):
     return interpolated_x, interpolated_y
 
 
-def s_bend(x_list, y_list, amp, num):
+def s_bend(x_list, y_list, amp, num, turn = 0):
     def draw_curve(x1, y1, x2, y2, amplitude, dir, start_flg, end_flg):
         # 计算两点之间的距离和角度
         dx = x2 - x1
@@ -208,9 +208,15 @@ def s_bend(x_list, y_list, amp, num):
     # 遍历相邻的坐标点，绘制余弦曲线和坐标点
     for i in range(len(x_list) - 2):
         if i % 2 == 0:
-            dir = 0
+            if turn == 1:
+                dir = 1
+            else:
+                dir = 0
         else:
-            dir = 1
+            if turn == 1:
+                dir = 0
+            else:
+                dir = 1
         if i == 0:
             start_flg = 1
         else:

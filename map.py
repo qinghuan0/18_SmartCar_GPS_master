@@ -65,7 +65,10 @@ class Map:
 
     def s_y__p(self, x, y, flg_x, flg_y, bar_num): #先过s弯和圆环，掉头过坡道
         # s弯
-        stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100)
+        if (x[0] > x[1] and y[-1] < y[0]) or (x[0] < x[1] and y[-1] > y[0]):
+            stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100, 1)
+        else:
+            stage2_x, stage2_y = s_bend(flg_x[:bar_num], flg_y[:bar_num], 0.00001, 100)
         # 起点到第一个锥桶
         stage1_x, stage1_y = insert_point(x[0],y[0],stage2_x[0],stage2_y[0], 30)
         del stage1_x[18:]
@@ -74,11 +77,11 @@ class Map:
         if x[0]<x[1] and y[-1]<y[0]: #起点在左上角且向右掉头
             stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05,  np.pi / 1.5, - np.pi * 2, 80)
         elif x[0] < x[1] and y[-1] > y[0]:  # 起点在左上角且向左掉头
-            stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, np.pi / 1.5, - np.pi * 2, 80)
+            stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, - np.pi , np.pi * 1.5, 80)
         elif x[0] > x[1] and y[-1] > y[0]:  # 起点右下角且向右掉头
             stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, np.pi * 1.5, - np.pi , 80)
         else:
-            stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, np.pi * 1.5, - np.pi , 80)
+            stage3_x, stage3_y = ring(flg_x[bar_num], flg_y[bar_num], 2e-05, 0 , np.pi * 2.5 , 80)
         #大圆环到掉头区
         stage4_x, stage4_y = insert_point(stage3_x[-1], stage3_y[-1], x[1], y[1], 30)
         #掉头点到坡道
