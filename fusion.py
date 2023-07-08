@@ -11,9 +11,9 @@ import numpy as np
 from scipy.special import comb
 import math
 
-z_speed = 18 -4 # 直道速度
-s_speed = 12 -4 # 弯道速度
-j_speed = 10 -4  # 缓冲速度
+z_speed = 24 # 直道速度
+s_speed = 12 # 弯道速度
+j_speed = 10 # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
 # ----------------动态图的类------------------------
@@ -314,7 +314,7 @@ def filter_points(x, y, threshold):
 
 def speed_planning(x, y):
     speed = []
-    value = 1.9e-06
+    value = 2.65e-06
     last_dis = 100
     for i in range(len(x) - 1):
         dis = np.sqrt((x[i+1] - x[i]) ** 2 + (y[i+1] - y[i]) ** 2)
@@ -328,63 +328,12 @@ def speed_planning(x, y):
         last_dis = dis
 
     speed.append(z_speed)
+    for i in range(1, len(speed)-1):
+        if speed[i-1] == s_speed and speed[i+1] == z_speed:
+            speed[i] = z_speed - abs(z_speed - s_speed)
 
     return speed
 
-
-# ---------------经纬度转平面坐标系（LLA--->NEU）------------------------
-def gps_LLAtoNEU(a, b, sa, sb):
-    longitude = a
-    latitude = b
-    start_longitude = sa
-    start_latitude = sb
-    c = []
-    d = []
-    n = len(a)
-    earth = 6378137  # 地球半径，单位：m
-    pi = 3.1415926535898
-    for i in range(n):
-        now_longitude = longitude[i]
-        now_latitude = latitude[i]
-        rad_latitude1 = start_latitude * pi / 180
-        rad_latitude2 = now_latitude * pi / 180
-        rad_longitude1 = start_longitude * pi / 180
-        rad_longitude2 = now_longitude * pi / 180
-        aaa = rad_latitude1 - rad_latitude2
-        bbb = rad_longitude1 - rad_longitude2
-        distance = 2 * math.asin(math.sqrt(pow(math.sin(aaa / 2), 2) + math.cos(rad_latitude1)
-                                           * math.cos(rad_latitude2) * pow(math.sin(bbb / 2), 2)))
-        distance = distance * earth
-        ccc = math.sin(rad_longitude2 - rad_longitude1) * math.cos(rad_latitude2)
-        ddd = math.cos(rad_latitude1) * math.sin(rad_latitude2) - math.sin(rad_latitude1) \
-              * math.cos(rad_latitude2) * math.cos(rad_longitude2 - rad_longitude1)
-        angle = math.atan2(ccc, ddd) * 180 / pi
-        if angle < 0:
-            angle = angle + 360
-        angle2 = (450 - angle) * pi / 180
-        px = distance * math.cos(angle2)
-        py = distance * math.sin(angle2)
-        c.append(px)
-        d.append(py)
-
-    return c, d
-
-
-# 按NEU坐标系显示
-def myplot_NEU(outx, outy, xi, yi):
-    neux, neuy = gps_LLAtoNEU(outx, outy, outx[0], outy[0])
-    neuxi, neuyi = gps_LLAtoNEU(xi, yi, outx[0], outy[0])
-
-    fig2, ax2 = plt.subplots()
-    for i in range(len(neux)):
-        ii = i + 1
-        ax2.plot(neux[i], neuy[i], 'or')
-        if i < len(neux):
-            ax2.text(neux[i] + 0.00001, neuy[i] + 0.00001, str(i), weight="bold", color="k", fontsize=7)
-
-    ax2.plot(neuxi, neuyi, '-y')
-    ax2.plot(neux, neuy, '--r')
-    plt.show()
 
 # ----------------------------My_function-----------------------------------------------
 

@@ -112,12 +112,12 @@ def gps_receive(ser):
 def txt_out(x, y, flag_x, flag_y, your_name):
     # -----------save---txt--------------
     # 输出限制在小数点后6位
-    for i in range(len(x)):
-        x[i] = round(x[i], 6)
-        y[i] = round(y[i], 6)
-    for i in range(len(flag_x)):
-        flag_x[i] = round(flag_x[i], 6)
-        flag_y[i] = round(flag_y[i], 6)
+    # for i in range(len(x)):
+    #     x[i] = round(x[i], 6)
+    #     y[i] = round(y[i], 6)
+    # for i in range(len(flag_x)):
+    #     flag_x[i] = round(flag_x[i], 6)
+    #     flag_y[i] = round(flag_y[i], 6)
 
     n = len(x)
     nn = len(flag_y)
@@ -298,19 +298,19 @@ def point_sent(COM,file_name):
         for i in range(len(lo)):
             ser.write(lo[i].encode())
             ser.write(b',')
-            sleep(0.1)
+            sleep(0.08)
             print('lo', i)
         ser.write(b'*')
         for i in range(len(lo)):
             ser.write(la[i].encode())
             ser.write(b',')
-            sleep(0.1)
+            sleep(0.08)
             print('la', i)
         ser.write(b'*')
         for i in range(len(lo)):
             ser.write(speed[i].encode())
             ser.write(b',')
-            sleep(0.1)
+            sleep(0.08)
             print('speed', i)
 
         print('lo',len(lo))

@@ -6,9 +6,6 @@
 
 import sys
 import os
-
-import matplotlib.pyplot as plt
-
 from map import Map
 from fusion import *
 from text_operation import *
@@ -58,7 +55,7 @@ if __name__ == "__main__":
     plt.ylim(min(outy) - 0.00002, max(outy) + 0.00002)
 
     plt.show()
-    myplot_NEU(outx, outy, b_x, b_y)
+    # myplot_NEU(outx, outy, b_x, b_y)
 
     while True:
         msg = "请选择你的操作"
@@ -67,7 +64,7 @@ if __name__ == "__main__":
         choice = g.choicebox(msg, title, choices)
 
         if choice == '修改点位':
-            mygps = Point_Move(flag_x, flag_y, x, y)
+            mygps = Point_Move(x, y, flag_x, flag_y)
 
         if choice == '点位复位':
             flag_x = routx
