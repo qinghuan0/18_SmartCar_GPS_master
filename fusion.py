@@ -12,8 +12,8 @@ from scipy.special import comb
 import math
 
 z_speed = 24 # 直道速度
-s_speed = 12 # 弯道速度
-j_speed = 10 # 缓冲速度
+s_speed = 14 # 弯道速度
+j_speed = 13 # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
 # ----------------动态图的类------------------------
@@ -289,37 +289,60 @@ def calculate_curvature(x, y):
     return curvature
 
 def filter_points(x, y, threshold):
-    # 根据曲率筛选点
+    # 根据曲率筛选点,阈值越小弯道的点越多
     curvature = calculate_curvature(x, y)
     filtered_x = []
     filtered_y = []
+    speed = []
+    las_cur = 0
     for i in range(len(x)):
         if curvature[i] >= threshold:
-            if i % 4 == 0:
+            if i % 4 == 0: #弯道
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
+                if las_cur < threshold:
+                    speed.append(j_speed)#缓冲速度
+                else:
+                    speed.append(s_speed)
+                las_cur = curvature[i]
 
-        else:
+        else: #直道
+            #加点
             # if i < len(x)-1 and curvature[i+1] >= threshold:
             #     filtered_x.append(x[i-2])
             #     filtered_y.append(y[i-2])
             #     filtered_x.append(x[i])
             #     filtered_y.append(y[i])
 
-            if i % 22 == 0:
+            if i % 28 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
+                if las_cur >= threshold:
+                    speed.append(z_speed - abs(z_speed - s_speed))
+                else:
+                    speed.append(z_speed)
+                las_cur = curvature[i]
 
-    return filtered_x, filtered_y
+    value = 4.2e-06 #距离阈值
+    for j in range(1, len(speed) - 1):
+        dis = np.sqrt((filtered_x[j+1] - filtered_x[j]) ** 2 + (filtered_y[j+1] - filtered_y[j]) ** 2)
+        # print(dis)
+        if speed[j] == j_speed:
+            speed[j-1] = z_speed
+        # elif dis >= value:
+        #     speed[j] = z_speed
+
+    return filtered_x, filtered_y, speed
 
 def speed_planning(x, y):
     speed = []
-    value = 2.65e-06
-    last_dis = 100
+    value = 2.3118617471470538e-05
+    last_dis = 0
     for i in range(len(x) - 1):
         dis = np.sqrt((x[i+1] - x[i]) ** 2 + (y[i+1] - y[i]) ** 2)
-        # print(dis)
+        print(dis)
         if dis <= value: #距离阈值
+            print(dis)
             if last_dis > value:
                 speed[i - 1] = j_speed #速度缓冲
             speed.append(s_speed)
@@ -331,6 +354,9 @@ def speed_planning(x, y):
     for i in range(1, len(speed)-1):
         if speed[i-1] == s_speed and speed[i+1] == z_speed:
             speed[i] = z_speed - abs(z_speed - s_speed)
+
+    for i in range(len(speed)-11,len(speed)):
+        speed[i] = z_speed
 
     return speed
 
