@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     ax1.plot(outx, outy, 'ro-')
     ax1.plot(b_x, b_y, 'y-')
-    # ax1.plot(x[1:3], y[1:3], 'b-')
+    ax1.plot(x[1:3], y[1:3], 'b-')
     for i in range(0,len(speed_control)):
         if speed_control[i] == z_speed:
             ax1.plot(outx[i],outy[i], 'yo')
@@ -54,6 +54,7 @@ if __name__ == "__main__":
     plt.xlim(min(outx) - 0.00002, max(outx) + 0.00002)
     plt.ylim(min(outy) - 0.00002, max(outy) + 0.00002)
 
+    plt.axis('equal')
     plt.show()
     # myplot_NEU(outx, outy, b_x, b_y)
 
@@ -77,11 +78,11 @@ if __name__ == "__main__":
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'out1')
             if outname != None:
                 make_code(outx, outy, speed_control,outname + '.txt')
-                sys.exit(0)
+                # sys.exit(0)
                 # g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
 
         if choice == '输出地图':
-            outname = g.enterbox("请输入生成文件名：", 'gps-system', 'p__y_s_right_d')
+            outname = g.enterbox("请输入生成文件名：", 'gps-system', 'rec_1')
             if outname != None:
                 make_map(x, y, flag_x, flag_y, outname + '.txt')
                 # g.msgbox('成功生成代码，请在当前文件夹下查看', "gps-system")
@@ -117,6 +118,7 @@ if __name__ == "__main__":
             plt.xlim(min(outx) - 0.00002, max(outx) + 0.00002)
             plt.ylim(min(outy) - 0.00002, max(outy) + 0.00002)
 
+            plt.axis('equal')
             plt.show()
 
         if choice == '蓝牙发送':
@@ -125,4 +127,3 @@ if __name__ == "__main__":
                 bluetooth_out(outx, outy, speed_control,outname + '.txt')
             point_sent('com15', outname + '.txt')
             g.msgbox('发送完毕！')
-            break

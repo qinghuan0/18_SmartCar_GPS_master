@@ -11,9 +11,9 @@ import numpy as np
 from scipy.special import comb
 import math
 
-z_speed = 24 # 直道速度
+z_speed = 28 # 直道速度
 s_speed = 14 # 弯道速度
-j_speed = 13 # 缓冲速度
+j_speed = 9 # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
 # ----------------动态图的类------------------------
@@ -171,10 +171,12 @@ def s_bend(x_list, y_list, amp, num, turn=0):
 
         if dir == 0:
             # 生成 x 坐标点，取周期的前半部分
-            if start_flg == 1:
+            if start_flg == 1 and end_flg == 0:
                 x = np.linspace(-distance / 4, distance / 2, num)
-            elif end_flg == 1:
+            elif end_flg == 1 and start_flg == 0:
                 x = np.linspace(0, distance * 3 / 4, num)
+            elif start_flg == end_flg ==1:
+                x = np.linspace(-distance / 4, distance *  3 / 4, num)
             else:
                 x = np.linspace(0, distance / 2, num)
 
@@ -185,10 +187,12 @@ def s_bend(x_list, y_list, amp, num, turn=0):
 
         else:
             # 生成 x 坐标点，取周期的后半部分
-            if start_flg == 1:
+            if start_flg == 1 and end_flg == 0:
                 x = np.linspace(-distance / 4, distance / 2, num)
-            elif end_flg == 1:
+            elif end_flg == 1 and start_flg == 0:
                 x = np.linspace(0, distance * 3 / 4, num)
+            elif start_flg == end_flg ==1:
+                x = np.linspace(-distance / 4, distance *  3 / 4, num)
             else:
                 x = np.linspace(0, distance / 2, num)
 
@@ -208,14 +212,14 @@ def s_bend(x_list, y_list, amp, num, turn=0):
     for i in range(len(x_list) - 2):
         if i % 2 == 0:
             if turn == 1:
-                dir = 1
-            else:
                 dir = 0
+            else:
+                dir = 1
         else:
             if turn == 1:
-                dir = 0
-            else:
                 dir = 1
+            else:
+                dir = 0
         if i == 0:
             start_flg = 1
         else:
@@ -296,6 +300,7 @@ def filter_points(x, y, threshold):
     speed = []
     las_cur = 0
     for i in range(len(x)):
+        print(curvature[i])
         if curvature[i] >= threshold:
             if i % 4 == 0: #弯道
                 filtered_x.append(x[i])
@@ -327,8 +332,8 @@ def filter_points(x, y, threshold):
     for j in range(1, len(speed) - 1):
         dis = np.sqrt((filtered_x[j+1] - filtered_x[j]) ** 2 + (filtered_y[j+1] - filtered_y[j]) ** 2)
         # print(dis)
-        if speed[j] == j_speed:
-            speed[j-1] = z_speed
+        # if speed[j] == j_speed:
+        #     speed[j-1] = z_speed
         # elif dis >= value:
         #     speed[j] = z_speed
 

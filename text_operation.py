@@ -34,7 +34,7 @@ def gps_receive(ser):
         if count > 0:
             data = ser.read(1)
             print(data)
-            if data == b'1':
+            if data == b'<':
                 # 帧头判断成功，开始分析数据
                 A_flag = 1
                 lo_flag = 0
@@ -47,7 +47,7 @@ def gps_receive(ser):
                     #     break
                 continue
             # 判断帧尾
-            if data == b'3':
+            if data == b'?':
                 w = 0
                 if flag_point == 1: #标志点
                     flag_num += 1
@@ -62,7 +62,7 @@ def gps_receive(ser):
             # 帧头判断成功
             if A_flag == 1:
                 # 分析数据，判断是经度，纬度
-                if data != b'2':
+                if data != b'>':
                     if lo_flag == 0:
                         int_byte = ord(data)
                         int_value = int_value | (int_byte << w)
@@ -73,7 +73,7 @@ def gps_receive(ser):
                         int_value = int_value | (int_byte << w)
                         w += 8
                         loop += 1
-                elif data == b'2':
+                elif data == b'>':
                     w = 0
                     if loop > 4:
                         loop = 0
@@ -85,10 +85,10 @@ def gps_receive(ser):
                     lo_flag = 1
                     loop = 0
 
-            if data == b'4':
+            if data == b'!':
                 flag_point = 1
 
-            if data == b'5':
+            if data == b'.':
                 ser.close()
                 print("接收完毕!")
 
@@ -112,12 +112,12 @@ def gps_receive(ser):
 def txt_out(x, y, flag_x, flag_y, your_name):
     # -----------save---txt--------------
     # 输出限制在小数点后6位
-    # for i in range(len(x)):
-    #     x[i] = round(x[i], 6)
-    #     y[i] = round(y[i], 6)
-    # for i in range(len(flag_x)):
-    #     flag_x[i] = round(flag_x[i], 6)
-    #     flag_y[i] = round(flag_y[i], 6)
+    for i in range(len(x)):
+        x[i] = round(x[i], 6)
+        y[i] = round(y[i], 6)
+    for i in range(len(flag_x)):
+        flag_x[i] = round(flag_x[i], 6)
+        flag_y[i] = round(flag_y[i], 6)
 
     n = len(x)
     nn = len(flag_y)
@@ -298,19 +298,19 @@ def point_sent(COM,file_name):
         for i in range(len(lo)):
             ser.write(lo[i].encode())
             ser.write(b',')
-            sleep(0.08)
+            sleep(0.05)
             print('lo', i)
         ser.write(b'*')
         for i in range(len(lo)):
             ser.write(la[i].encode())
             ser.write(b',')
-            sleep(0.08)
+            sleep(0.05)
             print('la', i)
         ser.write(b'*')
         for i in range(len(lo)):
             ser.write(speed[i].encode())
             ser.write(b',')
-            sleep(0.08)
+            sleep(0.05)
             print('speed', i)
 
         print('lo',len(lo))

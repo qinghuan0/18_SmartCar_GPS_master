@@ -3,6 +3,8 @@
 # author:恩
 # version:4.2
 # -------------------------------
+import numpy as np
+
 from fusion import *
 
 class Map:
@@ -52,14 +54,15 @@ class Map:
         y_list = stage1_y + stage2_y + stage3_y + stage4_y + stage5_y + stage6_y + stage7_y
         curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
         curve_points_x, curve_points_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
-        o_x,o_y = filter_points(curve_x,curve_y,35000) #滤点
+        o_x,o_y, speed = filter_points(curve_x,curve_y,35000) #滤点
         # del o_x[-2:]
         # del o_y[-2:]
         for i in range(5): #终点加点避免蓝牙末尾丢包导致丢点
-            o_x.append(curve_x[-1])
-            o_y.append(curve_y[-1])
+            o_x.append(x[-1])
+            o_y.append(y[-1])
+            speed.append(z_speed)
 
-        speed = speed_planning(o_x, o_y)
+        # speed = speed_planning(o_x, o_y)
 
         return curve_points_x,curve_points_y,o_x,o_y,speed
 
@@ -106,21 +109,33 @@ class Map:
         curve_x, curve_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
         o_x,o_y, speed = filter_points(curve_x,curve_y,15000) #滤点
         for i in range(5): #终点加点避免蓝牙末尾丢包导致丢点
-            o_x.append(curve_x[-1])
-            o_y.append(curve_y[-1])
+            o_x.append(x[-1])
+            o_y.append(y[-1])
+            speed.append(z_speed)
         # speed = speed_planning(o_x, o_y)
 
         return curve_x,curve_y,o_x,o_y,speed
 
     def p__y_s(self, x, y, flg_x, flg_y, bar_num): #先过坡道，掉头过圆环和s弯
         # 起点到坡道
-        stage1_x, stage1_y = insert_point(x[0],y[0],2* x[1]-((x[1]+x[2])/2), 2* y[1]-((y[1]+y[2])/2), 15)
+        stage1_x, stage1_y = insert_point(x[0],y[0],2* x[1]-((x[1]+x[2])/2), 2* y[1]-((y[1]+y[2])/2), 10)
         #坡道
         stage2_x, stage2_y = insert_point(stage1_x[-1], stage1_y[-1], 2 * x[2] - x[1], 2 * y[2] - y[1], 150)
         #坡道到掉头区
         stage3_x, stage3_y = insert_point(stage2_x[-1], stage2_y[-1], x[3], y[3], 10)
+
+        ######
+        # stage1_x = x[:4]
+        # stage1_y = y[:4]
+        # stage2_x, stage2_y = interpolate_points(stage1_x, stage1_y, 10)
+        # stage2_x = np.array(stage2_x)
+        # stage2_y = np.array(stage2_y)
+        # stage2_x = stage2_x.tolist()
+        # stage2_y = stage2_y.tolist()
+        ######
+
         #掉头
-        stage4_x, stage4_y = insert_point(x[3], y[3], x[4], y[4], 15)
+        stage4_x, stage4_y = insert_point(x[3], y[3], x[4], y[4], 50)
         #大圆环
         # if x[0]<x[1] and y[-1]<y[0]: #起点在左上角且向右掉头
         #     stage6_x, stage6_y = ring(flg_x[0], flg_y[0], 2.8e-05, np.pi * 1.5, - np.pi * 0.8 , 80)
@@ -129,7 +144,8 @@ class Map:
         # elif x[0]>x[1] and y[-1]>y[0]: #起点右下角且向右掉头
         #     stage6_x, stage6_y = ring(flg_x[0], flg_y[0], 2.8e-05, np.pi * 1.5, - np.pi * 1.5, 80)
         # else:
-        stage6_x, stage6_y = ring(flg_x[0], flg_y[0], 2.8e-05, - np.pi , np.pi * 1.7 , 80)
+        # stage6_x, stage6_y = ring(flg_x[0], flg_y[0], 2.65e-05, - np.pi * 3 / 2 , np.pi * 1.35 , 80)
+        stage6_x, stage6_y = ring(flg_x[0], flg_y[0], 2.8e-05, np.pi * 0.5, - np.pi * 2.3, 80)
         # 掉头点到圆环
         stage5_x, stage5_y = insert_point(stage4_x[-1], stage4_y[-1], stage6_x[0], stage6_y[0], 15)
         # s弯
@@ -140,18 +156,25 @@ class Map:
         # 圆环到s弯
         stage7_x, stage7_y = insert_point(stage6_x[-1],stage6_y[-1],stage8_x[0],stage8_y[0], 30)
         #s弯到终点
-        stage9_x, stage9_y = insert_point(flg_x[-1],flg_y[-1], x[-1], y[-1], 30)
-        del stage9_x[18:]
-        del stage9_y[18:]
+        stage9_x, stage9_y = insert_point(stage8_x[-1],stage8_y[-1], x[-1], y[-1], 30)
+        # del stage9_x[18:]
+        # del stage9_y[18:]
 
-        x_list = stage1_x + stage2_x +stage3_x + stage4_x + stage5_x + stage6_x + stage7_x + stage8_x + stage9_x
-        y_list = stage1_y + stage2_y +stage3_y + stage4_y + stage5_y + stage6_y + stage7_y + stage8_y + stage9_y
+        x_list = stage1_x + stage2_x + stage3_x + stage4_x + stage5_x + stage6_x + stage7_x + stage8_x + stage9_x
+        y_list = stage1_y + stage2_y + stage3_y + stage4_y + stage5_y + stage6_y + stage7_y + stage8_y + stage9_y
+
+        ###
+        # x_list = stage2_x + stage4_x + stage5_x + stage6_x + stage7_x +stage8_x + stage9_x
+        # y_list = stage2_y + stage4_y + stage5_y + stage6_y + stage7_y +stage8_y + stage9_y
+        ###
+
         curve_x, curve_y = bezier_curve_interpolation(x_list,y_list,200) #贝塞尔曲线拟合
         curve_x, curve_y = interpolate_points(curve_x, curve_y, 5) #曲线平均插值
-        o_x,o_y,speed = filter_points(curve_x,curve_y,35000) #滤点
+        o_x,o_y,speed = filter_points(curve_x,curve_y,5000) #滤点
         for i in range(5): #终点加点避免蓝牙末尾丢包导致丢点
-            o_x.append(curve_x[-1])
-            o_y.append(curve_y[-1])
+            o_x.append(x[-1])
+            o_y.append(y[-1])
+            speed.append(z_speed)
         # speed = speed_planning(o_x, o_y)
 
         return curve_x,curve_y,o_x,o_y,speed
