@@ -336,6 +336,8 @@ def filter_points(x, y, threshold):
         #     speed[j-1] = z_speed
         # elif dis >= value:
         #     speed[j] = z_speed
+        if j < 14:
+            speed[j] = z_speed
 
     return filtered_x, filtered_y, speed
 
