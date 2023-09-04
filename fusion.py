@@ -9,11 +9,10 @@ from matplotlib.lines import Line2D
 from scipy import interpolate
 import numpy as np
 from scipy.special import comb
-import math
 
-z_speed = 28 # 直道速度
+z_speed = 26 # 直道速度
 s_speed = 14 # 弯道速度
-j_speed = 9 # 缓冲速度
+j_speed = 10 # 缓冲速度
 
 # ----------------------------My_function-----------------------------------------------
 # ----------------动态图的类------------------------
@@ -319,7 +318,7 @@ def filter_points(x, y, threshold):
             #     filtered_x.append(x[i])
             #     filtered_y.append(y[i])
 
-            if i % 28 == 0:
+            if i % 45 == 0:
                 filtered_x.append(x[i])
                 filtered_y.append(y[i])
                 if las_cur >= threshold:
@@ -336,7 +335,7 @@ def filter_points(x, y, threshold):
         #     speed[j-1] = z_speed
         # elif dis >= value:
         #     speed[j] = z_speed
-        if j < 14:
+        if j < 9:
             speed[j] = z_speed
 
     return filtered_x, filtered_y, speed

@@ -125,5 +125,5 @@ if __name__ == "__main__":
             outname = g.enterbox("请输入生成文件名：", 'gps-system', 'bt_out1')
             if outname != None:
                 bluetooth_out(outx, outy, speed_control,outname + '.txt')
-            point_sent('com15', outname + '.txt')
+            point_sent('com8', outname + '.txt')
             g.msgbox('发送完毕！')
